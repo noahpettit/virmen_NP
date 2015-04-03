@@ -16,7 +16,8 @@ code.termination = @terminationCodeFun;
 function vr = initializationCodeFun(vr)
 
 vr.debugMode = true;
-vr.mouseNum = 99;
+mouseInfo = inputdlg('Input the Mouse Number: ');
+vr.mouseNum = str2double(mouseInfo{1});
 
 % set parameters
 vr.friction = 0.25;

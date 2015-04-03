@@ -3,7 +3,7 @@ function [vr] = giveReward(vr,nRew)
 %(instantaneous pulses)
 %   nRew - number of rewards to deliver
 
-sinDur = vr.rewardDuration;
+sinDur = .06; %Calibrated to give 4ul for single reward, SNC 4/3/15
 
 if ~vr.debugMode
     actualRate = get (vr.ao,'SampleRate'); %get sample rate
