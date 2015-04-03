@@ -1,0 +1,16 @@
+function vr = initCounters(vr)
+vr.conds = {'Linear Track'};
+vr.streak = 0;
+vr.inITI = 0;
+vr.isReward = 0;
+vr.startTime = now;
+vr.trialStartTime = rem(now,1);
+vr.numTrials = 0;
+vr.numRewards = 0;
+vr.trialResults = [];
+vr.cuePos = 1;
+vr.inITI = 0;
+vr.isReward = 0;
+vr.dp = 0;
+vr.startTime = now;
+vr.trialTimer = tic;
