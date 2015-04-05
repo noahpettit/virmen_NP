@@ -13,5 +13,5 @@ vr.itiStartTime = tic;
 vr.inITI = 1;
 vr.numTrials = vr.numTrials + 1;
 
-%save trial data, then reset
+%save trial data
 vr = saveTrialData(vr);

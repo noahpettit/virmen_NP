@@ -14,4 +14,5 @@ end
 
 fprintf('\n Concatenated Data for %03.0f Trials \n',sum(trialData)),
 sessionDataName = fullfile(vr.fullPath,'sessionData');
-save(sessionDataName,'sessionData'),
+experData = vr.exper;
+save(sessionDataName,'sessionData','experData'),

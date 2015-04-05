@@ -1,0 +1,10 @@
+function vr = updateTextDisplay(vr)
+
+vr.text(1).string = ['TIME: ' datestr(now-vr.timeStarted,'MM.SS')];
+vr.text(2).string = ['TRIALS: ' num2str(vr.numTrials];
+if vr.numTrials > 0
+    vr.text(3).string = ['%Correct: ' vr.numRewards/vr.numTrials];
+else
+    vr.text(3).string = ['%Correct: 0'];
+end
+vr.text(4).string = ['Track Length: ', str2double(vr.exper.variables.floorLength)];
