@@ -20,6 +20,7 @@ vr = makeDirSNC_laptop(vr);
 
 % set parameters
 vr.friction = 0.25;
+vr.sessionSwitchpoint = 6;
 vr.itiCorrect = 2;
 vr.itiMiss = 4;
 vr.armLength = eval(vr.exper.variables.armLength);
@@ -28,7 +29,7 @@ vr.nWorlds = length(vr.worlds);
 vr = initTextboxes(vr);
 vr = initDAQ(vr);
 vr = initCounters(vr);
-vr.currentWorld = randi(vr.nWorlds);
+vr.currentWorld = randi(vr.nWorlds/2);
 
 % --- RUNTIME code: executes on every iteration of the ViRMEn engine.
 function vr = runtimeCodeFun(vr)
@@ -58,7 +59,12 @@ else
 end
 
 % Check to see if ITI has elapsed, and restart trial if it has
-vr = waitForNextTrial(vr);
+if vr.numTrials >= vr.sessionSwitchpoint
+    worlds = [3,4];
+else
+    worlds = [1,2];
+end
+vr = waitForNextTrial(vr,worlds);
 
 % Update Textboxes
 vr = updateTextDisplay(vr);
