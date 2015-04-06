@@ -2,12 +2,24 @@ function vr = initDAQ(vr)
 % Start the DAQ acquisition
 if ~vr.debugMode
     daqreset; %reset DAQ in case it's still in use by a previous Matlab program
-    vr.ai = analoginput('nidaq','dev1'); % connect to the DAQ card
-    addchannel(vr.ai,0:1); % start channels 0 and 1
-    set(vr.ai,'samplerate',1000,'samplespertrigger',1e7); % define buffer
-    start(vr.ai); % start acquisition
+    vr.ai = daq.createSession('ni');
+    vr.ai.addAnalogInputChannel('dev1','ai0','Voltage');
+    vr.ai.addAnalogInputChannel('dev1','ai1','Voltage');
+    vr.ai.Rate = 1e3;
+    vr.ai.NotifyWhenDataAvailableExceeds=50;
+    vr.ai.IsContinuous=1;
+    vr.aiListener = vr.ai.addlistener('DataAvailable', @avgMvData);
+    startBackground(vr.ai),
+    pause(1e-2),
+    
+    vr.ao = daq.createSession('ni');
+    vr.ao.addAnalogOutputChannel('dev1','ao0','Voltage');
+    vr.ao.Rate = 1e4;
+end
 
-    vr.ao = analogoutput('nidaq','dev1');
-    addchannel(vr.ao,0);
-    set(vr.ao,'samplerate',10000);
+end
+
+function avgMvData(src,event)
+    global mvData
+    mvData = mean(event.Data,1);
 end

@@ -15,8 +15,8 @@ code.termination = @terminationCodeFun;
 % --- INITIALIZATION code: executes before the ViRMEn engine starts.
 function vr = initializationCodeFun(vr)
 
-vr.debugMode = true;
-vr = makeDirSNC_laptop(vr);
+vr.debugMode = false;
+vr = makeDirSNC(vr);
 
 % set parameters
 vr.friction = 0.25;
@@ -28,7 +28,7 @@ vr.nWorlds = length(vr.worlds);
 vr = initTextboxes(vr);
 vr = initDAQ(vr);
 vr = initCounters(vr);
-vr.currentWorld = randi(2);
+vr.currentWorld = randi(vr.nWorlds);
 
 % --- RUNTIME code: executes on every iteration of the ViRMEn engine.
 function vr = runtimeCodeFun(vr)
@@ -57,4 +57,9 @@ vr = updateTextDisplay(vr);
 
 % --- TERMINATION code: executes after the ViRMEn engine stops.
 function vr = terminationCodeFun(vr)
+if ~vr.debugMode
+    stop(vr.ai),
+    delete(vr.ai),
+    delete(vr.ao),
+end
 vr = collectTrialData(vr);
