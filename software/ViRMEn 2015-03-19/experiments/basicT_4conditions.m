@@ -16,7 +16,7 @@ code.termination = @terminationCodeFun;
 function vr = initializationCodeFun(vr)
 
 vr.debugMode = true;
-vr = makeDirSNC_laptop(vr);
+vr = makeDirSNC(vr);
 
 % set parameters
 vr.friction = 0.25;
@@ -71,4 +71,5 @@ vr = updateTextDisplay(vr);
 
 % --- TERMINATION code: executes after the ViRMEn engine stops.
 function vr = terminationCodeFun(vr)
-vr = collectTrialData(vr);
+[vr,sessionData] = collectTrialData(vr);
+
