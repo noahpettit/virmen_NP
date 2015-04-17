@@ -1,0 +1,7 @@
+function vr = makeSwitchingSessionFigs(vr,sessionData)
+
+trials = unique(sessionData(end,:));
+
+for nTrial = trials
+    trialInd = find(sessionData(1,:)==nTrial);
+    world = 

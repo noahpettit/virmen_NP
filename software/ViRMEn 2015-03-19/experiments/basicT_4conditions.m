@@ -72,4 +72,5 @@ vr = updateTextDisplay(vr);
 % --- TERMINATION code: executes after the ViRMEn engine stops.
 function vr = terminationCodeFun(vr)
 [vr,sessionData] = collectTrialData(vr);
+vr = makeSwitchingSessionFigs(vr,sessionData);
 
