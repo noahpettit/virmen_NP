@@ -20,7 +20,7 @@ vr = makeDirSNC(vr);
 
 % set parameters
 vr.friction = 0.25;
-vr.sessionSwitchpoint = 6;
+vr.sessionSwitchpoint = 100;
 vr.itiCorrect = 2;
 vr.itiMiss = 4;
 vr.armLength = eval(vr.exper.variables.armLength);
