@@ -1,6 +1,6 @@
 function calibrate(n_pulses, delay, duration)
 if nargin < 3
-    duration = 0.1; % .012 -.029 duration = 0.035; %alice 130305
+    duration = 0.065; % .012 -.029 duration = 0.035; %alice 130305
 end
 if nargin < 2
     delay = 1;
