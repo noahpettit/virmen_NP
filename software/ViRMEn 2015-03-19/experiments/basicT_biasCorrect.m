@@ -20,6 +20,7 @@ vr = makeDirSNC(vr);
 
 % set parameters
 vr.friction = 0.25;
+vr.sessionSwitchpoints = eval(vr.exper.variables.switches);
 vr.itiCorrect = 2;
 vr.itiMiss = 4;
 vr.armLength = eval(vr.exper.variables.armLength);
@@ -47,6 +48,18 @@ if vr.inITI == 0 && abs(vr.position(1)) > vr.armLength/2;
         vr.isReward = true;
         vr.behaviorData(9,vr.trialIterations) = 1;
         vr = endVRTrial(vr,vr.isReward);
+    end
+else
+    vr.isReward = false;
+    vr.behaviorData(9,vr.trialIterations) = 0;
+end
+
+% Check to see if ITI has elapsed, and restart trial if it has
+switchBlock = find(vr.numTrials >= vr.sessionSwitchpoints,1,'last');
+if isempty(switchBlock)
+    switchBlock = 0;
+end
+if mod(switchBlock,2)
     worlds = [3,4];
 else
     worlds = [1,2];
@@ -59,5 +72,5 @@ vr = updateTextDisplay(vr);
 % --- TERMINATION code: executes after the ViRMEn engine stops.
 function vr = terminationCodeFun(vr)
 [vr,sessionData] = collectTrialData(vr);
-
+vr = makeSwitchingSessionFigs(vr,sessionData, vr.sessionSwitchpoints);
 
