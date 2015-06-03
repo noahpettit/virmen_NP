@@ -30,6 +30,7 @@ vr = initTextboxes(vr);
 vr = initDAQ(vr);
 vr = initCounters(vr);
 vr.currentWorld = randi(vr.nWorlds/2);
+vr.firstTurn = 1;
 
 % --- RUNTIME code: executes on every iteration of the ViRMEn engine.
 function vr = runtimeCodeFun(vr)
@@ -46,8 +47,16 @@ if vr.inITI == 0 && abs(vr.position(1)) > vr.armLength/2;
     rightArm = vr.position(1) > 0;
     if ~abs(rightWorld-rightArm)
         vr.isReward = true;
-        vr.behaviorData(9,vr.trialIterations) = 1;
+        if vr.firstTurn
+            vr.behaviorData(9,vr.trialIterations) = 1;
+            vr.numRewards = vr.numRewards + 1;
+        else 
+            vr.behaviorData(9,vr.trialIterations) = 0;
+        end
         vr = endVRTrial(vr,vr.isReward);
+    else
+        vr.firstTurn = 0;
+        vr.behaviorData(9,vr.trialIterations) = 0;
     end
 else
     vr.isReward = false;

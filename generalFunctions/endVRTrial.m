@@ -2,7 +2,6 @@ function vr = endVRTrial(vr,rewarded)
 
 if rewarded
     vr = giveReward(vr,1);
-    vr.numRewards = vr.numRewards + 1;
     vr.itiDur = vr.itiCorrect;
 else
     vr.itiDur = vr.itiMiss;
