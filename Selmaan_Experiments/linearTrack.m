@@ -43,6 +43,7 @@ vr = adjustFriction(vr);
 if vr.inITI == 0 && vr.position(2) > vr.mazeLength;
     vr.isReward = true;
     vr.behaviorData(9,vr.trialIterations) = 1;
+    vr.numRewards = vr.numRewards + 1;
     vr = endVRTrial(vr,vr.isReward);
 else
     vr.isReward = false;

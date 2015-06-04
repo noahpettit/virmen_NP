@@ -47,6 +47,7 @@ if vr.inITI == 0 && abs(vr.position(1)) > vr.armLength/2;
     if ~abs(rightWorld-rightArm)
         vr.isReward = true;
         vr.behaviorData(9,vr.trialIterations) = 1;
+        vr.numRewards = vr.numRewards + 1;
         vr = endVRTrial(vr,vr.isReward);
     else
         vr.isReward = false;
