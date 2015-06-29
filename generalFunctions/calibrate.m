@@ -6,7 +6,7 @@ if nargin < 2
     delay = .5;
 end
 if nargin < 1
-    n_pulses = 200;
+    n_pulses = 600;
 end
 
 daqreset;
