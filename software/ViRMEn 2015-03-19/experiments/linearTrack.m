@@ -15,7 +15,7 @@ code.termination = @terminationCodeFun;
 % --- INITIALIZATION code: executes before the ViRMEn engine starts.
 function vr = initializationCodeFun(vr)
 
-vr.debugMode = false;
+vr.debugMode = true;
 vr = makeDirSNC(vr);
 
 % set parameters
@@ -40,13 +40,13 @@ vr = collectBehaviorIter(vr);
 vr = adjustFriction(vr);
 
 % check for reward and deliver if in reward position
-if vr.inITI == 0 && vr.position(2) > vr.mazeLength + 10;
-    vr.isReward = true;
+if vr.inITI == 0 && (vr.position(2) > vr.mazeLength + 5);
     vr.behaviorData(9,vr.trialIterations) = 1;
     vr.numRewards = vr.numRewards + 1;
-    vr = endVRTrial(vr,vr.isReward);
+    vr = giveReward(vr,1);
+    vr.itiDur = vr.itiCorrect;
+    vr = endVRTrial(vr);
 else
-    vr.isReward = false;
     vr.behaviorData(9,vr.trialIterations) = 0;
 end
 

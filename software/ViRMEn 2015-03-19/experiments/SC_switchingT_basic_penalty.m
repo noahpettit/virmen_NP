@@ -54,40 +54,47 @@ vr = collectBehaviorIter(vr);
 vr = adjustFriction(vr);
 
 % check for reward and deliver if in reward position
-if vr.inITI == 0 && abs(vr.position(1)) > vr.armLength/2 + 10;
+if vr.inITI == 0 && abs(vr.position(1)) > vr.armLength/2 + 5;
+    % Check reward condition
     rightWorld = vr.currentWorld==1 || vr.currentWorld==4;
     rightArm = vr.position(1) > 0;
     if ~abs(rightWorld-rightArm)
-        vr.isReward = true;
+        %deliver reward if appropriate
         vr.behaviorData(9,vr.trialIterations) = 1;
         vr.numRewards = vr.numRewards + 1;
+        vr = giveReward(vr,1);
+        vr.itiDur = vr.itiCorrect;
         vr.wrongStreak = 0;
-        vr = endVRTrial(vr,vr.isReward);
     else
-        vr.isReward = false;
+        % update wrongStreak counter if incorrect
         vr.behaviorData(9,vr.trialIterations) = 0;
-        vr.wrongStreak = vr.wrongStreak + 1;
         vr.itiMiss = vr.itiMissBase + vr.penaltyITI*vr.wrongStreak;
-        vr = endVRTrial(vr,vr.isReward);
+        vr.wrongStreak = vr.wrongStreak + 1;
+        vr.itiDur = vr.itiMiss;
     end
+    % End trial and update switchBlock / worlds info
+    vr = endVRTrial(vr);
+    switchBlock = 1 + find(vr.numTrials >= vr.sessionSwitchpoints,1,'last');
+    if isempty(switchBlock)
+        switchBlock = 1;
+    end
+    vr.blockWorlds = vr.contingentBlocks(switchBlock,:);
 else
     vr.behaviorData(9,vr.trialIterations) = 0;
-end
-
-switchBlock = 1 + find(vr.numTrials >= vr.sessionSwitchpoints,1,'last');
-if isempty(switchBlock)
-    switchBlock = 1;
-end
-
-worlds = vr.contingentBlocks(switchBlock,:);
+end    
 
 % Check to see if ITI has elapsed, and restart trial if it has
-vr = waitForNextTrial(vr,worlds);
+vr = waitForNextTrial(vr);
 
 % Update Textboxes
 vr = updateTextDisplay(vr);
 
 % --- TERMINATION code: executes after the ViRMEn engine stops.
 function vr = terminationCodeFun(vr)
+if ~vr.debugMode
+    stop(vr.ai),
+    delete(vr.ai),
+    delete(vr.ao),
+end
 [vr,sessionData] = collectTrialData(vr);
 vr = makeSwitchingSessionFigs(vr,sessionData, vr.sessionSwitchpoints);
