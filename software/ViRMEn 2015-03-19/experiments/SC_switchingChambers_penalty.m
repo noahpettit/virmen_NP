@@ -19,7 +19,8 @@ vr.debugMode = true;
 vr = makeDirSNC(vr);
 
 % set parameters
-vr.friction = 0.25;
+vr.mvThresh = 1/6;
+vr.friction = 0.0;
 vr.itiCorrect = 2;
 vr.itiMissBase = 4;
 vr.penaltyITI = 2;
