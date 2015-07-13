@@ -36,7 +36,7 @@ vr = initDAQ(vr);
 vr = initCounters(vr);
 
 nBlocks = length(vr.sessionSwitchpoints)+1;
-initBlock = randi(2);
+initBlock = 2 - mod(vr.mouseNum,2);
 blockIDs = mod(initBlock:initBlock+nBlocks-1,2) + 1;
 blockMazes = [1 2;3 4];
 for nBlock = 1:nBlocks
