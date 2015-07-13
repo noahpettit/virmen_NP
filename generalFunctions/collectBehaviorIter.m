@@ -1,7 +1,7 @@
 function vr = collectBehaviorIter(vr)
 
 thisIter(1) = vr.currentWorld;
-thisIter(2:4) = vr.dp([1,2,4]);
+thisIter(2:4) = vr.velocity([1,2,4]);
 thisIter(5:7) = vr.position([1,2,4]);
 thisIter(8) = vr.inITI;
 
