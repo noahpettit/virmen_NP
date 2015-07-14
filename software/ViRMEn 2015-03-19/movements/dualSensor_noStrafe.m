@@ -6,7 +6,7 @@ velocity = [0 0 0 0];
 global mvData
 data = mvData;
 
-offset = [1.685 1.685 1.685];
+offset = [1.688 1.688 1.688];
 
 data = data - offset;
 
