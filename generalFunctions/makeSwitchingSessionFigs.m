@@ -14,7 +14,7 @@ for nTrial = trials
 end
 
 %% pCor by Trial Plot
-for cond = 1:4
+for cond = 1:max(world)
     condInd = find(world==cond);
     pCor(cond) = mean(reward(condInd));
 end
