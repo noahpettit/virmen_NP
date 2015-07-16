@@ -15,7 +15,7 @@ code.termination = @terminationCodeFun;
 % --- INITIALIZATION code: executes before the ViRMEn engine starts.
 function vr = initializationCodeFun(vr)
 
-vr.debugMode = true;
+vr.debugMode = false;
 vr = makeDirSNC(vr);
 
 % set parameters
