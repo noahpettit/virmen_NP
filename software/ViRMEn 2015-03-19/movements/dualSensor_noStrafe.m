@@ -6,7 +6,7 @@ velocity = [0 0 0 0];
 global mvData
 data = mvData;
 
-offset = [1.687 1.687 1.687];
+offset = [1.686 1.687 1.687]; %[pitch, roll, yaw]
 
 data = data - offset;
 
