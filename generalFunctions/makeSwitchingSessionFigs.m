@@ -14,12 +14,12 @@ for nTrial = trials
 end
 
 %% pCor by Trial Plot
-for cond = 1:4
+for cond = 1:max(world)
     condInd = find(world==cond);
     pCor(cond) = mean(reward(condInd));
 end
 
-figure,bar(pCor),
+figure,bar(reshape(pCor,4,[])),
 xlabel('1 = Dark Right || 2 = Light Left || 3 = Dark Left || 4 = Light Right')
 ylabel('% Correct')
 
