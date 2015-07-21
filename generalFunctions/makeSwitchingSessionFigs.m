@@ -19,7 +19,7 @@ for cond = 1:max(world)
     pCor(cond) = mean(reward(condInd));
 end
 
-figure,bar(pCor),
+figure,bar(reshape(pCor,4,[])),
 xlabel('1 = Dark Right || 2 = Light Left || 3 = Dark Left || 4 = Light Right')
 ylabel('% Correct')
 
