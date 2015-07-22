@@ -20,7 +20,7 @@ vr = makeDirSNC(vr);
 
 % set parameters
 vr.mvThresh = 10;
-vr.friction = 0.0;
+vr.friction = 0.25;
 vr.itiCorrect = 2;
 vr.itiMissBase = 4;
 vr.penaltyITI = 2;
