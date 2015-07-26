@@ -19,7 +19,8 @@ vr.debugMode = false;
 vr = makeDirSNC(vr);
 
 % set parameters
-vr.mvThresh = 10;
+vr.rewardDelay = 1;
+vr.mvThresh = 5;
 vr.friction = 0.5;
 vr.itiCorrect = 2;
 vr.itiMiss = 4;
@@ -40,13 +41,26 @@ vr = collectBehaviorIter(vr);
 % Decrease velocity by friction coefficient (can be zero)
 vr = adjustFriction(vr);
 
-% check for reward and deliver if in reward position
+% check for trial-terminating position and deliver reward
 if vr.inITI == 0 && (vr.position(2) > vr.mazeLength + 5);
-    vr.behaviorData(9,vr.trialIterations) = 1;
-    vr.numRewards = vr.numRewards + 1;
-    vr = giveReward(vr,1);
-    vr.itiDur = vr.itiCorrect;
-    vr = endVRTrial(vr);
+    % Disable movement
+    vr.dp = 0*vr.dp;
+    % Enforce Reward Delay
+    if ~vr.inRewardZone
+        vr.rewStartTime = tic;
+        vr.inRewardZone = 1;
+    end
+    vr.rewDelayTime = toc(vr.rewStartTime);    
+    if vr.rewDelayTime > vr.rewardDelay   
+        vr.behaviorData(9,vr.trialIterations) = 1;
+        vr.numRewards = vr.numRewards + 1;
+        vr = giveReward(vr,1);
+        vr.itiDur = vr.itiCorrect;
+        vr = endVRTrial(vr);
+    else
+        vr.behaviorData(9,vr.trialIterations) = 0;
+        vr.behaviorData(8,vr.trialIterations) = -1;
+    end
 else
     vr.behaviorData(9,vr.trialIterations) = 0;
 end

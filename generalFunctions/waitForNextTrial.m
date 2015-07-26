@@ -14,7 +14,7 @@ if vr.inITI == 1
             vr.position = vr.worlds{vr.currentWorld}.startLocation;
             vr.worlds{vr.currentWorld}.surface.visible(:) = 1;
             vr.dp = 0;
-            vr.firstTurn = 1;
+            vr.inRewardZone = 0;
             vr.trialTimer = tic;
             vr.trialStartTime = rem(now,1);
         end

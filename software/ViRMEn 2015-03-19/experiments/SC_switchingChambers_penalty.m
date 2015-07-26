@@ -19,7 +19,8 @@ vr.debugMode = false;
 vr = makeDirSNC(vr);
 
 % set parameters
-vr.mvThresh = 10;
+vr.rewardDelay = 1;
+vr.mvThresh = 5;
 vr.friction = 0.25;
 vr.itiCorrect = 2;
 vr.itiMissBase = 4;
@@ -45,7 +46,6 @@ end
 
 worldChoice = randi(size(vr.contingentBlocks,2));
 vr.currentWorld = vr.contingentBlocks(1,worldChoice);
-vr.wrongStreak = 0;
 
 % --- RUNTIME code: executes on every iteration of the ViRMEn engine.
 function vr = runtimeCodeFun(vr)
@@ -56,32 +56,45 @@ vr = collectBehaviorIter(vr);
 % Decrease velocity by friction coefficient (can be zero)
 vr = adjustFriction(vr);
 
-% check for reward and deliver if in reward position
+% check for trial-terminating position and deliver reward
 if vr.inITI == 0 && (vr.position(2) > vr.rewardLength);
-    % Check reward condition
-    rightWorld = vr.currentWorld==1 || vr.currentWorld==4;
-    rightArm = vr.position(1) > 0;
-    if ~abs(rightWorld-rightArm)
-        %deliver reward if appropriate
-        vr.behaviorData(9,vr.trialIterations) = 1;
-        vr.numRewards = vr.numRewards + 1;
-        vr = giveReward(vr,1);
-        vr.itiDur = vr.itiCorrect;
-        vr.wrongStreak = 0;
+    % Disable movement
+    vr.dp = 0*vr.dp;
+    % Enforce Reward Delay
+    if ~vr.inRewardZone
+        vr.rewStartTime = tic;
+        vr.inRewardZone = 1;
+    end
+    vr.rewDelayTime = toc(vr.rewStartTime);    
+    if vr.rewDelayTime > vr.rewardDelay
+        % Check reward condition
+        rightWorld = vr.currentWorld==1 || vr.currentWorld==4;
+        rightArm = vr.position(1) > 0;
+        if ~abs(rightWorld-rightArm)
+            %deliver reward if appropriate
+            vr.behaviorData(9,vr.trialIterations) = 1;
+            vr.numRewards = vr.numRewards + 1;
+            vr = giveReward(vr,1);
+            vr.itiDur = vr.itiCorrect;
+            vr.wrongStreak = 0;
+        else
+            % update wrongStreak counter if incorrect
+            vr.behaviorData(9,vr.trialIterations) = 0;
+            vr.itiMiss = vr.itiMissBase + vr.penaltyITI*vr.wrongStreak;
+            vr.itiDur = vr.itiMiss;
+            vr.wrongStreak = vr.wrongStreak + 1;
+        end
+        % End trial and update switchBlock / worlds info
+        vr = endVRTrial(vr);
+        switchBlock = 1 + find(vr.numTrials >= vr.sessionSwitchpoints,1,'last');
+        if isempty(switchBlock)
+            switchBlock = 1;
+        end
+        vr.blockWorlds = vr.contingentBlocks(switchBlock,:);
     else
-        % update wrongStreak counter if incorrect
         vr.behaviorData(9,vr.trialIterations) = 0;
-        vr.itiMiss = vr.itiMissBase + vr.penaltyITI*vr.wrongStreak;
-        vr.itiDur = vr.itiMiss;
-        vr.wrongStreak = vr.wrongStreak + 1;
+        vr.behaviorData(8,vr.trialIterations) = -1;
     end
-    % End trial and update switchBlock / worlds info
-    vr = endVRTrial(vr);
-    switchBlock = 1 + find(vr.numTrials >= vr.sessionSwitchpoints,1,'last');
-    if isempty(switchBlock)
-        switchBlock = 1;
-    end
-    vr.blockWorlds = vr.contingentBlocks(switchBlock,:);
 else
     vr.behaviorData(9,vr.trialIterations) = 0;
 end    
