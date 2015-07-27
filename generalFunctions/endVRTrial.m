@@ -1,11 +1,4 @@
-function vr = endVRTrial(vr,rewarded)
-
-if rewarded
-    vr = giveReward(vr,1);
-    vr.itiDur = vr.itiCorrect;
-else
-    vr.itiDur = vr.itiMiss;
-end
+function vr = endVRTrial(vr)
 
 vr.worlds{vr.currentWorld}.surface.visible(:) = 0;
 vr.itiStartTime = tic;

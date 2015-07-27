@@ -8,4 +8,4 @@ save(trialFileName,'behavData')
 
 % Reset trial iteration counter and behavior data matrix
 vr.trialIterations = 0;
-vr.behaviorData = nan(9,1e4);
+vr.behaviorData = nan(10,1e4);
