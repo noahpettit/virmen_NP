@@ -17,9 +17,13 @@ for nTrial = trials
 end
 
 %% pCor by Trial Plot
-for cond = 1:max(world)
+for cond = 1:8
     condInd = find(world==cond);
-    pCor(cond) = mean(reward(condInd));
+    if isempty(condInd)
+        pCor(cond) = nan;
+    else
+        pCor(cond) = mean(reward(condInd));
+    end
 end
 
 figure,bar(reshape(pCor,4,[])),
