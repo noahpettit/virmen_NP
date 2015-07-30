@@ -63,3 +63,26 @@ xlabel('Trials'),
 ylabel(hAx(2),'Percent Correct'),
 ylabel(hAx(1),'Trial Duration (s)'),
 title(sprintf('Smoothed Performance with %2.0f point Boxcar',filtLength)),
+%% Plot Percent Correct by Block
+
+nBlocks = length(switchPoints) +1;
+switchInd = [1, switchPoints, inf];
+for nBlock = 1 : nBlocks
+    blockInd(nBlock, :) = (1:max(trials)) >= switchInd(nBlock) & (1 : max(trials)) < switchInd(nBlock +1);
+end
+
+for nBlock = 1 : nBlocks
+    pattern = world < 5; 
+    block = blockInd(nBlock,:);
+    pCorPattern(nBlock) = mean(reward(pattern & block));
+    pCorNotPattern(nBlock) = mean(reward(~pattern & block));
+end
+
+
+y = [pCorPattern; pCorNotPattern]';
+figure, hold on,
+bar(y);
+% bar(xlim,[.8 .8], 'g', '--'); % horizontal line at .8
+
+xlabel('Block');
+ylabel('Percent Correct')
