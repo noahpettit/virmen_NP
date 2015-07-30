@@ -1,10 +1,11 @@
 function vr = waitForNextTrial(vr)
 
 if vr.inITI == 1
+    vr.filtSpeed = .9 * vr.filtSpeed + .1 * norm(vr.velocity);
     vr.itiTime = toc(vr.itiStartTime);
     if vr.itiTime > vr.itiDur
         if ~vr.debugMode
-            isMouseStill = norm(vr.velocity) < vr.mvThresh;
+            isMouseStill = vr.filtSpeed < vr.mvThresh;
         else
             isMouseStill = 1;
         end
