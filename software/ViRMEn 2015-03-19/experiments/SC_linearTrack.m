@@ -22,8 +22,8 @@ vr = makeDirSNC(vr);
 vr.rewardDelay = 1;
 vr.mvThresh = 5;
 vr.friction = 0.5;
-vr.itiCorrect = 2;
-vr.itiMiss = 4;
+vr.itiCorrect = 0;
+vr.itiMiss = 0;
 vr.mazeLength = eval(vr.exper.variables.floorLength);
 vr.nWorlds = length(vr.worlds);
 
