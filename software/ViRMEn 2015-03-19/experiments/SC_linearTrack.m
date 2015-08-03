@@ -78,4 +78,5 @@ if ~vr.debugMode
     delete(vr.ai),
     delete(vr.ao),
 end
-vr = collectTrialData(vr);
+[vr,sessionData] = collectTrialData(vr);
+vr = makeLinearTrackFigs(vr,sessionData);
