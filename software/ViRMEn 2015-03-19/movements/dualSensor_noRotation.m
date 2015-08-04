@@ -6,7 +6,7 @@ velocity = [0 0 0 0];
 global mvData
 data = mvData;
 
-offset = [1.686 1.686 1.686]; %calibrate to pitch foward when still 7/20 AH
+offset = [1.685 1.685 1.686]; %calibrated 8/4 AH
 
 data = data - offset;
 

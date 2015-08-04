@@ -20,7 +20,7 @@ vr = makeDirSNC(vr);
 
 % set parameters
 vr.rewardDelay = 1;
-vr.mvThresh = 5;
+vr.mvThresh = 10;
 vr.friction = 0.25;
 vr.itiCorrect = 0; % decreased when length of movement threshold increased 7/31
 vr.itiMissBase = 0; % decreased when length of movement threshold increased 7/31

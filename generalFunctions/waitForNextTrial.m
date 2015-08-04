@@ -1,7 +1,7 @@
 function vr = waitForNextTrial(vr)
 
 if vr.inITI == 1
-    vr.filtSpeed = .9 * vr.filtSpeed + .1 * norm(vr.velocity);
+    vr.filtSpeed = .8 * vr.filtSpeed + .2 * norm(vr.velocity);
     vr.itiTime = toc(vr.itiStartTime);
     if vr.itiTime > vr.itiDur
         if ~vr.debugMode
@@ -10,8 +10,9 @@ if vr.inITI == 1
             isMouseStill = 1;
         end
         if ~isMouseStill
-            vr.worlds(length(vr.worlds));
+            vr.worlds{vr.currentWorld}.backgroundColor = [1 1 1];
         else
+            vr.worlds{vr.currentWorld}.backgroundColor = [0 0 0];
             vr.inITI = 0;
             vr = chooseNextWorld(vr);
             vr.position = vr.worlds{vr.currentWorld}.startLocation;
