@@ -9,7 +9,9 @@ if vr.inITI == 1
         else
             isMouseStill = 1;
         end
-        if isMouseStill
+        if ~isMouseStill
+            vr.worlds(length(vr.worlds));
+        else
             vr.inITI = 0;
             vr = chooseNextWorld(vr);
             vr.position = vr.worlds{vr.currentWorld}.startLocation;
