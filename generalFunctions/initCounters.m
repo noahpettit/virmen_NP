@@ -9,5 +9,6 @@ vr.trialIterations = 0;
 vr.wrongStreak = 0;
 vr.inRewardZone = 0;
 vr.filtSpeed = 0;
+vr.targetHidden = 0;
 vr.sessionStartTime = tic;
 vr.behaviorData = nan(9,1e4);
