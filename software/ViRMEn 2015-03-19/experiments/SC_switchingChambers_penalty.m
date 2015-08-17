@@ -20,10 +20,10 @@ vr = makeDirSNC(vr);
 
 % set parameters
 vr.rewardDelay = 1;
-vr.mvThresh = 5;
+vr.mvThresh = 10;
 vr.friction = 0.25;
 vr.itiCorrect = 0;
-vr.itiMissBase = 0;
+vr.itiMissBase = 1;
 vr.penaltyITI = 0;
 vr.penaltyProb = 0;
 floorLength = eval(vr.exper.variables.floorLength);

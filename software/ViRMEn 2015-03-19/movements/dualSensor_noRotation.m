@@ -12,6 +12,6 @@ data = data - offset;
 
 % Update velocity
 alpha = -115; %-44
-lateralReduction = 4;
+lateralReduction = 2;
 velocity(1) = (-alpha*data(2))/lateralReduction;
 velocity(2) = alpha*data(1);
