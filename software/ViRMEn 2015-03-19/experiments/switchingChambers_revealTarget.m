@@ -108,15 +108,15 @@ else
 end
 
 % Check is position is past hide-point
-if (vr.currentWorld > 4) && ~vr.targetHidden && (vr.position(2) > vr.hideCuePast)
-    vr.targetHidden = 1;
+if (vr.currentWorld > 4) && ~vr.targetRevealed && (vr.position(2) > vr.hideCuePast) && ~vr.inITI
+    vr.targetRevealed = 1,
     % Hide cue walls in target zone
     vr.worlds{vr.currentWorld}.surface.vertices(2,vr.cueToHide{vr.currentWorld}) = ...
         100 + vr.worlds{vr.currentWorld}.surface.vertices(2,vr.cueToHide{vr.currentWorld});
     vr.worlds{vr.currentWorld}.surface.vertices(2,vr.blankToHide{vr.currentWorld}) = ...
         -100 + vr.worlds{vr.currentWorld}.surface.vertices(2,vr.blankToHide{vr.currentWorld});
-elseif vr.targetHidden && vr.inITI
-    vr.targetHidden = 0;
+elseif vr.targetRevealed && vr.inITI
+    vr.targetRevealed = 0,
     % Reset / reveal cue ID once in reward zone
     vr.worlds{vr.currentWorld}.surface.vertices(2,vr.cueToHide{vr.currentWorld}) = ...
         -100 + vr.worlds{vr.currentWorld}.surface.vertices(2,vr.cueToHide{vr.currentWorld});
