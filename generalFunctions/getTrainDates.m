@@ -9,7 +9,7 @@ if ~exist('yearSpec','var')
 end
 
 if ~exist('homeDir','var')
-    homeDir = 'Z:\HarveyLab\Annie H';
+    homeDir = 'Z:\Annie H';
 end
 
 currentFolder = pwd;
