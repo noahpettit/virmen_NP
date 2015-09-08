@@ -20,12 +20,12 @@ vr = makeDirSNC(vr);
 
 % set parameters
 vr.rewardDelay = 1;
-vr.mvThresh = 10;
+vr.mvThresh = 5;
 vr.friction = 0.25;
-vr.itiCorrect = 0;
-vr.itiMissBase = 2;
+vr.itiCorrect = 1;
+vr.itiMissBase = 3;
 vr.penaltyITI = 0;
-vr.penaltyProb = 0;
+vr.penaltyProb = 2;
 floorLength = eval(vr.exper.variables.floorLength);
 funnelLength = eval(vr.exper.variables.funnelLength);
 vr.rewardLength = 5 + floorLength + funnelLength;
