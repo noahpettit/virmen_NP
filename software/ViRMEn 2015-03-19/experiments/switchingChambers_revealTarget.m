@@ -96,7 +96,8 @@ if vr.inITI == 0 && (vr.position(2) > vr.rewardLength)
         end
         vr.blockWorlds = vr.contingentBlocks(switchBlock,:);
         % Change to noChecker maze probabilistically
-        if sum(vr.numTrials == vr.sessionSwitchpoints) || rand < vr.fractionNoChecker
+        if (sum(vr.numTrials == vr.sessionSwitchpoints) || rand < vr.fractionNoChecker) ...
+                && vr.fractionNoChecker ~=0
             vr.blockWorlds = vr.blockWorlds + 4;
         end
     else
