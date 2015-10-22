@@ -21,7 +21,7 @@ vr = makeDirSNC(vr);
 % set parameters
 vr.rewardDelay = 1;
 vr.mvThresh = eval(vr.exper.variables.mvThresh);
-vr.friction = 0.25;
+vr.friction = 0;
 vr.itiCorrect = eval(vr.exper.variables.itiCorrect); 
 vr.itiMissBase = eval(vr.exper.variables.itiMissBase); 
 vr.penaltyITI = 0; 
