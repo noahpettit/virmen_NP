@@ -19,7 +19,7 @@ vr.debugMode = false;
 vr = makeDirSNC(vr);
 
 % set parameters
-vr.rewardDelay = 1;
+vr.rewardDelay = eval(vr.exper.variables.rewardDelay);
 vr.mvThresh = eval(vr.exper.variables.mvThresh);
 vr.friction = 0;
 vr.itiCorrect = eval(vr.exper.variables.itiCorrect); 
