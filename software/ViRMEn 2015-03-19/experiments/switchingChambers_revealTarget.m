@@ -33,6 +33,7 @@ vr.nWorlds = length(vr.worlds);
 vr.sessionSwitchpoints = eval(vr.exper.variables.switches);
 vr.fractionNoChecker = eval(vr.exper.variables.fractionNoChecker);
 vr.hideCuePast = eval(vr.exper.variables.hideCuePast);
+vr.funnelWidth = eval(vr.exper.variables.funnelWidth);
 initBlock = 2 - mod(vr.mouseNum,2);
 
 % General setup functions
@@ -68,6 +69,7 @@ if vr.inITI == 0 && (vr.position(2) > vr.rewardLength)
     if ~vr.inRewardZone
         vr.rewStartTime = tic;
         vr.inRewardZone = 1;
+        vr.position(1:2) = [sign(vr.position(1))*vr.funnelWidth/4, vr.rewardLength+.1];
     end
     vr.rewDelayTime = toc(vr.rewStartTime);    
     if vr.rewDelayTime > vr.rewardDelay
