@@ -1,14 +1,14 @@
 function [dateCell,dateList] = getTrainDates(mouseNum,monthSpec,yearSpec,homeDir)
 
-if ~exist('monthSpec','var')
+if ~exist('monthSpec','var') || isempty(monthSpec)
     monthSpec = '*';
 end
 
-if ~exist('yearSpec','var')
+if ~exist('yearSpec','var') || isempty(yearSpec)
     yearSpec = '*';
 end
 
-if ~exist('homeDir','var')
+if ~exist('homeDir','var') || isempty(homeDir)
     homeDir = 'Z:\HarveyLab\Annie H';
 end
 
