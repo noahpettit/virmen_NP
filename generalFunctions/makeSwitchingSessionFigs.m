@@ -72,8 +72,11 @@ for nBlock = 1 : nBlocks
 end
 
 for nBlock = 1 : nBlocks
-    pattern = world < 5; 
+    thisBlock = find(blockInd(nBlock,:));
+    invalidTrials = thisBlock(1:floor(length(thisBlock)/2));
     block = blockInd(nBlock,:);
+    block(invalidTrials) = 0;
+    pattern = world < 5; 
     pCorPattern(nBlock) = mean(reward(pattern & block));
     pCorNotPattern(nBlock) = mean(reward(~pattern & block));
 end
@@ -82,7 +85,7 @@ end
 y = [pCorPattern; pCorNotPattern]';
 figure, hold on,
 bar(y);
-% bar(xlim,[.8 .8], 'g', '--'); % horizontal line at .8
 
+title('Second Half Performance');
 xlabel('Block');
 ylabel('Percent Correct')

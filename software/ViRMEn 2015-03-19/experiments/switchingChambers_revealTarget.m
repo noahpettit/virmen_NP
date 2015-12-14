@@ -19,13 +19,13 @@ vr.debugMode = false;
 vr = makeDirSNC(vr);
 
 % set parameters
-vr.rewardDelay = 1;
-vr.mvThresh = 10;
-vr.friction = 0.25;
-vr.itiCorrect = 0; 
-vr.itiMissBase = 2; 
+vr.rewardDelay = eval(vr.exper.variables.rewardDelay);
+vr.mvThresh = eval(vr.exper.variables.mvThresh);
+vr.friction = 0;
+vr.itiCorrect = eval(vr.exper.variables.itiCorrect); 
+vr.itiMissBase = eval(vr.exper.variables.itiMissBase); 
 vr.penaltyITI = 0; 
-vr.penaltyProb = 0;
+vr.penaltyProb = eval(vr.exper.variables.penaltyProb);
 floorLength = eval(vr.exper.variables.floorLength);
 funnelLength = eval(vr.exper.variables.funnelLength);
 vr.rewardLength = 5 + floorLength + funnelLength;
@@ -33,6 +33,7 @@ vr.nWorlds = length(vr.worlds);
 vr.sessionSwitchpoints = eval(vr.exper.variables.switches);
 vr.fractionNoChecker = eval(vr.exper.variables.fractionNoChecker);
 vr.hideCuePast = eval(vr.exper.variables.hideCuePast);
+vr.funnelWidth = eval(vr.exper.variables.funnelWidth);
 initBlock = 2 - mod(vr.mouseNum,2);
 
 % General setup functions
@@ -68,6 +69,7 @@ if vr.inITI == 0 && (vr.position(2) > vr.rewardLength)
     if ~vr.inRewardZone
         vr.rewStartTime = tic;
         vr.inRewardZone = 1;
+        vr.position(1:2) = [sign(vr.position(1))*vr.funnelWidth/4, vr.rewardLength+.1];
     end
     vr.rewDelayTime = toc(vr.rewStartTime);    
     if vr.rewDelayTime > vr.rewardDelay
@@ -96,7 +98,8 @@ if vr.inITI == 0 && (vr.position(2) > vr.rewardLength)
         end
         vr.blockWorlds = vr.contingentBlocks(switchBlock,:);
         % Change to noChecker maze probabilistically
-        if sum(vr.numTrials == vr.sessionSwitchpoints) || rand < vr.fractionNoChecker
+        if (sum(vr.numTrials == vr.sessionSwitchpoints) || rand < vr.fractionNoChecker) ...
+                && vr.fractionNoChecker ~=0
             vr.blockWorlds = vr.blockWorlds + 4;
         end
     else
