@@ -41,6 +41,14 @@ vr = collectBehaviorIter(vr);
 % Decrease velocity by friction coefficient (can be zero)
 vr = adjustFriction(vr);
 
+% Deliver reward if 'r' key pressed
+manualReward = vr.keyPressed == 82; %'r' key
+if manualReward
+    vr.behaviorData(9,vr.trialIterations) = 1;
+    vr.numRewards = vr.numRewards + 1;
+    vr = giveReward(vr,1);
+end
+
 % check for trial-terminating position and deliver reward
 if vr.inITI == 0 && (vr.position(2) > vr.mazeLength + 5);
     % Disable movement
