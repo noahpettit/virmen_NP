@@ -41,9 +41,8 @@ vr = collectBehaviorIter(vr);
 % Decrease velocity by friction coefficient (can be zero)
 vr = adjustFriction(vr);
 
-% Deliver Reward if 'r' key pressed
+% Deliver reward if 'r' key pressed
 manualReward = vr.keyPressed == 82; %'r' key
-%manualReward = strcmp(vr.keyPressed,'r');
 if manualReward
     vr.behaviorData(9,vr.trialIterations) = 1;
     vr.numRewards = vr.numRewards + 1;
