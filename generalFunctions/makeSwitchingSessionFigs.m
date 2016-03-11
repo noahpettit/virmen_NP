@@ -89,3 +89,78 @@ bar(y);
 title('Second Half Performance');
 xlabel('Block');
 ylabel('Percent Correct')
+
+%% Make strategy plots
+
+trials = unique(sessionData(end,:));
+cue = nan(1,max(trials));
+turn = nan(1,max(trials));
+for trial = trials
+    trialInd = find(sessionData(end,:)==trial);
+    cue(trial) = mod(mode(sessionData(1,trialInd)),2); %Black 0, White 1
+    turn(trial) =  sessionData(5,trialInd(end-10))>0; %I think positive is 'right'?            
+end
+
+tCode = nan(1,max(trials));
+for trial = trials(1:end-1)
+    if cue(trial) == cue(trial+1) %If cue is identical
+        if turn(trial) == turn(trial+1)
+            tCode(trial) = 0; %'Indeterminate' = 0
+        else
+            tCode(trial) = 1; %'Guess' = 1
+        end
+    elseif turn(trial) == turn(trial+1) %If cue changes but turn does not
+        if turn(trial) == 1
+            tCode(trial) = 2; %'Right Bias' = 2
+        else
+            tCode(trial) = 3; %'Left Bias' = 3
+        end
+    else %Cue and turn changes
+        if cue(trial) == turn(trial) %if BR or WL
+            tCode(trial) = 4; %'Context A' = 4
+        else
+            tCode(trial) = 5; %'Context B' = 5
+        end
+    end
+end
+
+toResolve = find(tCode==0);
+while ~isempty(toResolve)
+    transition = toResolve(1); %Find first unresolved transition
+    preTrans = find(tCode(1:transition)~=0,1,'last'); %Find in-transition
+    postTrans = find(tCode(transition:end)~=0,1,'first')-1+transition; %Find out-transition
+    
+    if tCode(preTrans)==tCode(postTrans) % If consistency, assign value
+        tCode(preTrans+1:postTrans-1) = tCode(preTrans);
+    elseif isempty(preTrans) %If no in-transition, assign out value
+        preTrans = 1;
+        tCode(1:postTrans-1) = tCode(postTrans);
+    elseif isempty(postTrans) %If no out-transition, assign in value
+        postTrans = length(tCode);
+        tCode(preTrains+1:end) = tCode(preTrans);
+    elseif tCode(preTrans) == 1 % If first value only is guess, assign second value
+        tCode(preTrans+1:postTrans-1) = tCode(postTrans);
+    elseif tCode(postTrans) == 1 %If second value only is guess, assign first
+        tCode(preTrans+1:postTrans-1) = tCode(preTrans);
+    end
+    
+    toResolve(ismember(toResolve,preTrans:postTrans))=[];
+end
+     
+filtLength = 21;
+sWin = gausswin(filtLength)/sum(gausswin(filtLength));
+%     figure,hold on
+%     for c = 0:5
+%         plot(conv(double(tCode==c),sWin,'same'),'linewidth',2)
+%     end
+%     legend('Indeterminate','Guess','R-Bias','L-Bias','Context-A','Context-B'),
+figure,hold on
+plot(conv(double(tCode==4),sWin,'same'),'linewidth',2),
+plot(conv(double(tCode==2|tCode==3),sWin,'same'),'linewidth',2),
+plot(conv(double(tCode==1),sWin,'same'),'linewidth',2),
+plot(conv(double(tCode==5),sWin,'same'),'linewidth',2),
+legend('Context-A','Bias','Guess','Context-B'),
+for switchPoint = switchPoints
+    line([switchPoint switchPoint],[0 1],'linewidth',2,'Color','g','linestyle','--')
+end
+axis tight
