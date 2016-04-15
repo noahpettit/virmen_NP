@@ -34,7 +34,8 @@ vr.sessionSwitchpoints = eval(vr.exper.variables.switches);
 vr.fractionNoChecker = eval(vr.exper.variables.fractionNoChecker);
 vr.hideCuePast = eval(vr.exper.variables.hideCuePast);
 vr.funnelWidth = eval(vr.exper.variables.funnelWidth);
-initBlock = 2 - mod(vr.mouseNum,2);
+% initBlock = 2 - mod(vr.mouseNum,2);
+initBlock = randi(2);
 
 % General setup functions
 vr = initTextboxes(vr);
