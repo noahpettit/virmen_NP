@@ -1,5 +1,8 @@
 function vr = makeSwitchingSessionFigs(vr,sessionData,switchPoints)
 
+
+sessionFigs = figure;
+
 %% input handling
 if ~exist('switchPoints','var') || isempty(switchPoints)
     switchPoints = 100;
@@ -26,7 +29,8 @@ for cond = 1:8
     end
 end
 
-figure,bar(reshape(pCor,4,[])),
+subplot(2,2,1),
+bar(reshape(pCor,4,[])),
 xlabel('1 = Dark Right || 2 = Light Left || 3 = Dark Left || 4 = Light Right')
 ylabel('% Correct')
 
@@ -45,7 +49,7 @@ reflectedTimePerTrial = [timePerTrial(halfFiltL:-1:1), ...
 filtTime = conv(reflectedTimePerTrial,trialFilt,'valid');
 
 
-figure, hold on,
+subplot(2,2,2), hold on,
 [hAx, hLine1, hLine2] = plotyy(trials,filtTime,trials,filtCorrect);
 hLine1.LineWidth = 2;
 hLine2.LineWidth = 2;
@@ -83,7 +87,7 @@ end
 
 
 y = [pCorPattern; pCorNotPattern]';
-figure, hold on,
+subplot(2,2,3), hold on,
 bar(y);
 
 title('Second Half Performance');
@@ -154,7 +158,7 @@ sWin = gausswin(filtLength)/sum(gausswin(filtLength));
 %         plot(conv(double(tCode==c),sWin,'same'),'linewidth',2)
 %     end
 %     legend('Indeterminate','Guess','R-Bias','L-Bias','Context-A','Context-B'),
-figure,hold on
+subplot(2,2,4),hold on
 plot(conv(double(tCode==4),sWin,'same'),'linewidth',2),
 plot(conv(double(tCode==2|tCode==3),sWin,'same'),'linewidth',2),
 plot(conv(double(tCode==1),sWin,'same'),'linewidth',2),
