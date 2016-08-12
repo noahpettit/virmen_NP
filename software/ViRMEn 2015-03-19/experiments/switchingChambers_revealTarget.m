@@ -34,8 +34,8 @@ vr.sessionSwitchpoints = eval(vr.exper.variables.switches);
 vr.fractionNoChecker = eval(vr.exper.variables.fractionNoChecker);
 vr.hideCuePast = eval(vr.exper.variables.hideCuePast);
 vr.funnelWidth = eval(vr.exper.variables.funnelWidth);
-initBlock = 2 - mod(vr.mouseNum,2);
-% initBlock = randi(2);
+% initBlock = 2 - mod(vr.mouseNum,2);
+initBlock = eval(vr.exper.variables.initBlock);
 
 % General setup functions
 vr = initTextboxes(vr);
@@ -141,5 +141,9 @@ if ~vr.debugMode
     delete(vr.ai),
     delete(vr.ao),
     [vr,sessionData] = collectTrialData(vr);
-    vr = makeSwitchingSessionFigs(vr,sessionData, vr.sessionSwitchpoints);
+    try
+        vr = makeSwitchingSessionFigs(vr,sessionData, vr.sessionSwitchpoints);
+    catch
+        warning('Unable to make Figures'),
+    end
 end
