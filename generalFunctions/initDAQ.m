@@ -3,6 +3,7 @@ function vr = initDAQ(vr)
 if ~vr.debugMode
     daqreset; %reset DAQ in case it's still in use by a previous Matlab program
     vr.ai = daq.createSession('ni');
+    % add optical sensors for movement
     vr.ai.addAnalogInputChannel('dev1','ai0','Voltage');
     vr.ai.addAnalogInputChannel('dev1','ai1','Voltage');
     vr.ai.Rate = 1e3;
@@ -13,6 +14,7 @@ if ~vr.debugMode
     pause(1e-2),
     
     vr.ao = daq.createSession('ni');
+    % reward delivery
     vr.ao.addAnalogOutputChannel('dev1','ao0','Voltage');
     vr.ao.Rate = 1e4;
 end
