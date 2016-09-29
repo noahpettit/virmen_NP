@@ -15,6 +15,18 @@ code.termination = @terminationCodeFun;
 % --- INITIALIZATION code: executes before the ViRMEn engine starts.
 function vr = initializationCodeFun(vr)
 
+%% TODO:
+% fix text display
+% test reward delivery function
+% test ball movement function 
+% write save session
+% write save trial
+% write save iter
+% write function for increasing the length of the maze (or general function
+% for refreshing world vertices after changing experiment variable)
+% write termination code
+
+
 % set whether in debug mode:
 vr.debugMode = 1;
 vr.imaging = 0;
@@ -38,9 +50,10 @@ vr.session = struct(...
     'pCorrect', 0, ...
     'nRewards', 0, ...
     'rewardSizeML', 0.004, ...
-    'incorrectITI', 6,...
+    'incorrectITI', 3,...
     'correctITI', 3, ...
-    'minStemLength', 5, ...
+    'minStemLength', 3.1, ...
+    'maxStemLength', 1000, ...
     'targetRPM',4 ...
     );
 
@@ -58,14 +71,15 @@ vr.trial = struct(...
     'correctRadius', str2num(vr.exper.variables.width),... % distance that the mouse needs to be from the reward location to get the reward
     'incorrectTarget',[0 0],... % XY coordinate defining the center of the incorrect/punishment zone
     'incorrectRadius',0,... % distance that the mouse needs to be from incorrect loication for the trial to be counted as incorrect
-    'startPosition', [0 0 0 pi/2],... % position vector [X Y Z theta] defining where the mouse started the trial
+    'startPosition', [0 0 0 0],... % position vector [X Y Z theta] defining where the mouse started the trial
     'endPosition', [],... % position vector [X Y Z theta] defining where the mouse ended the trial
     'duration', [],... % duration of the trial in seconds
-    'itiDuration', [],... % duration of the post-trial ITI in seconds
+    'itiDuration', 3,... % duration of the post-trial ITI in seconds
     'trialStartTimeAbs', toc(vr.session.tic),... % time the trial started, relative to session start time
     'trialStopTimeAbs', [],... % time trial ended, relative to session start time
     'rewardN', 0,... % total number of rewards given on that trial
-    'isCorrect', [] ... % whether the mouse got the trial correct
+    'isCorrect', [], ... % whether the mouse got the trial correct
+    'isTimeout', [] ...
     );
 
 % initialize vr.iter
@@ -110,7 +124,7 @@ vr.isITI = 0;
 vr.mazeEnded = 0;
 
 vr.position = vr.trial(vr.tN).startPosition;
-vr.exper.variables.stemLength = vr.trial(vr.tN).stemLength;
+%vr.exper.variables.stemLength = vr.trial(vr.tN).stemLength;
 
 %% define helper functions
 vr.fun.euclideanDist = @(XY1,XY2)(sqrt(sum((XY1-XY2).^2)));
@@ -152,12 +166,16 @@ if vr.isITI
     % check to see if the ITI has elasped and if so come out of the ITI,
     % increment the trial counter, and set the mouse at the start of the
     % maze.
+    toc(vr.trial(vr.tN).itiTic)
+    vr.trial(vr.tN).itiDuration
+    
     if toc(vr.trial(vr.tN).itiTic)>vr.trial(vr.tN).itiDuration
         vr.isITI = 0;
         % increment the trial number
         vr.tN = vr.tN+1;
+        vr.trial(vr.tN).tic = tic;
         % set the mouse's start position
-        vr.position = vr.trial(tN).startPosition;
+        vr.position = vr.trial(vr.tN).startPosition;
         % make the world visible
         vr.worlds{1}.surface.visible(:) = 1;
     else
@@ -182,11 +200,14 @@ elseif vr.fun.euclideanDist(vr.position(1:2),vr.trial(vr.tN).correctTarget)<vr.t
     vr.trial(vr.tN).itiDuration = vr.session.correctITI;
     
     % otherwise, if the mouse is within the incorrect radius of the incorrect
-    % location, end the trial and commence timeout.
-elseif vr.fun.euclideanDist(vr.position(1:2),vr.trial(vr.tN).incorrectTarget)<vr.trial(vr.tN).incorrectRadius
+    % location, end the trial and commence timeout. OR if the trial timeout
+    % has been reached %% WARNING HARDCODED 30 s timeout
+elseif (vr.fun.euclideanDist(vr.position(1:2),vr.trial(vr.tN).incorrectTarget)<vr.trial(vr.tN).incorrectRadius) ...
+        || toc(vr.trial(vr.tN).tic) > 30
     % trial is incorrect
     vr.mazeEnded = 1;
     vr.trial(vr.tN).isCorrect = 0;
+    vr.trial(vr.tN).isTimeout = 1;
     vr.trial(vr.tN).itiDuration = vr.session.incorrectITI;
     
 end
@@ -210,7 +231,7 @@ if vr.mazeEnded
     
     
     % save the previous trial data
-    if vr.tN>1 & ~vr.debugMode
+    if vr.tN>1 && ~vr.debugMode
         vr = saveTrial(vr,vr.tN-1);
         vr = saveIter(vr,vr.tN-1);
         vr = saveSession(vr,vr.tN-1);
@@ -229,7 +250,7 @@ if vr.mazeEnded
     end
     
     vr.trial(vr.tN+1).trialN = vr.tN+1;
-    vr.trial(vr.tN+1).startPosition = [0 -vr.trial(vr.tN+1).stemLength+str2num(vr.exper.variables.edgeRadius)+1 str2num(vr.exper.variables.mouseHeight) pi/2];
+    vr.trial(vr.tN+1).startPosition = [0 -vr.trial(vr.tN+1).stemLength+str2num(vr.exper.variables.edgeRadius)+1 str2num(vr.exper.variables.mouseHeight) 0];
     vr.trial(vr.tN+1).rewardN = 0;
     
     %% update next trial params that stay the same
@@ -241,7 +262,7 @@ if vr.mazeEnded
     vr.trial(vr.tN+1).incorrectRadius = vr.trial(vr.tN).incorrectRadius;
     
     %% update maze for next trial
-    vr.exper.variables.stemLength = vr.trial(vr.tN+1).stemLength;
+    %vr.exper.variables.stemLength = vr.trial(vr.tN+1).stemLength;
     
     %% update text boxes
     if vr.drawText
@@ -252,6 +273,8 @@ if vr.mazeEnded
     vr.text(5).string = ['LENGTH: ', num2str(vr.trial(vr.tN).stemLength)];
     vr.text(6).string = ['RPM: ', num2str(60/(vr.trial(vr.tN).duration+vr.trial(vr.tN).itiDuration))];
     end
+    
+    vr.mazeEnded = 0;
     
 end
 
@@ -265,4 +288,4 @@ vr.iter(vr.iN).velocity = vr.velocity;
 
 % --- TERMINATION code: executes after the ViRMEn engine stops.
 function vr = terminationCodeFun(vr)
-%
+save([vr.savePath, filesep, vr.filenameMat], 'vr', '-v7.3');

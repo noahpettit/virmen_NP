@@ -42,6 +42,8 @@ if ~exist(path,'dir')
     mkdir(path);
 end
 
+vr.savePath = path;
+
 % now setup all the paths for saving the files
 vr.filenameTempMat = 'tempStorage.mat';
 vr.filenameTempMatCell = 'tempStorageCell.mat';
@@ -51,9 +53,13 @@ vr.filenameMatCell = [vr.experimenter,vr.exper.variables.mouseNumber,'_',datestr
 vr.filenameDat = [vr.experimenter,vr.exper.variables.mouseNumber,'_',datestr(now,'yymmdd'),'.dat'];
 fileIndex = 0;
 fileList = what(path);
+% if the filename already exists:
 while sum(strcmp(fileList.mat,vr.filenameMat)) > 0
     fileIndex = fileIndex + 1;
-    vr.filenameMat = [vr.experimenter,vr.exper.variables.mouseNumber,'_',datestr(now,'yymmdd'),'_',num2str(fileIndex),'.mat'];
+    vr.filenameMat = [vr.experimenter,vr.exper.variables.mouseNumber,'_',datestr(now,'yymmdd'),'_vr_',num2str(fileIndex),'.mat'];
+    vr.filenameSessionMat = [vr.experimenter,vr.exper.variables.mouseNumber,'_',datestr(now,'yymmdd'),'_session_',num2str(fileIndex),'.mat'];
+    vr.filenameTrialMat = [vr.experimenter,vr.exper.variables.mouseNumber,'_',datestr(now,'yymmdd'),'_trial_',num2str(fileIndex),'.mat'];
+    vr.filenameIterMat = [vr.experimenter,vr.exper.variables.mouseNumber,'_',datestr(now,'yymmdd'),'_iter_',num2str(fileIndex),'.mat'];
     vr.filenameMatCell = [vr.experimenter,vr.exper.variables.mouseNumber,'_',datestr(now,'yymmdd'),'_Cell_',num2str(fileIndex),'.mat'];
     vr.filenameDat = [vr.experimenter,vr.exper.variables.mouseNumber,'_',datestr(now,'yymmdd'),'_',num2str(fileIndex),'.dat'];
     fileList = what(path);
