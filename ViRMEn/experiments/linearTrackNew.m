@@ -54,7 +54,8 @@ vr.session = struct(...
     'correctITI', 3, ...
     'minStemLength', 3.1, ...
     'maxStemLength', 1000, ...
-    'targetRPM',4 ...
+    'targetRPM',4, ...
+    'stemLengthIncrement',5 ...
     );
 
 % initialize vr.trialInfo
@@ -166,9 +167,6 @@ if vr.isITI
     % check to see if the ITI has elasped and if so come out of the ITI,
     % increment the trial counter, and set the mouse at the start of the
     % maze.
-    toc(vr.trial(vr.tN).itiTic)
-    vr.trial(vr.tN).itiDuration
-    
     if toc(vr.trial(vr.tN).itiTic)>vr.trial(vr.tN).itiDuration
         vr.isITI = 0;
         % increment the trial number
@@ -243,10 +241,10 @@ if vr.mazeEnded
     rewardsPerMinute = 60/(vr.trial(vr.tN).duration+vr.trial(vr.tN).itiDuration);
     if rewardsPerMinute > vr.session.targetRPM
         % make the maze harder by making it longer
-        vr.trial(vr.tN+1).stemLength = vr.trial(vr.tN).stemLength + 10;
+        vr.trial(vr.tN+1).stemLength = vr.trial(vr.tN).stemLength + vr.session.stemLengthIncrement;
     else
         % make the maze easier by making it shorter
-        vr.trial(vr.tN+1).stemLength = max(vr.session.minStemLength, vr.trial(vr.tN).stemLength - 10);
+        vr.trial(vr.tN+1).stemLength = max(vr.session.minStemLength, vr.trial(vr.tN).stemLength - vr.session.stemLengthIncrement);
     end
     
     vr.trial(vr.tN+1).trialN = vr.tN+1;
