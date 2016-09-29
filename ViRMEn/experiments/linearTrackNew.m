@@ -18,13 +18,14 @@ function vr = initializationCodeFun(vr)
 % set whether in debug mode:
 vr.debugMode = 1;
 vr.imaging = 0;
+vr.drawText = 0;
 
 %
 vr.nTextFields = 6;
 
 % initialize vr.session
-% vr.session contains all variables that are fixed for a given session
-% - they do not change throughout the session. Saved once at the end of
+% vr.session contains all variables that do not vary trial-by-trial. One
+% copy of this is saved
 % each session.
 vr.session = struct(...
     'experimenterRigID', 'noah_deskPC',...
@@ -39,7 +40,8 @@ vr.session = struct(...
     'rewardSizeML', 0.004, ...
     'incorrectITI', 6,...
     'correctITI', 3, ...
-    'minStemLength', 5 ...
+    'minStemLength', 5, ...
+    'targetRPM',4 ...
     );
 
 % initialize vr.trialInfo
@@ -117,6 +119,14 @@ vr.fun.euclideanDist = @(XY1,XY2)(sqrt(sum((XY1-XY2).^2)));
 
 % place incorrect target tower at incorrect location
 
+% make the textboxes
+if vr.drawText
+vr.text(1).string = ['TIME: ' datestr(now-vr.session.startTime,'MM.SS')];
+vr.text(2).string = ['TRIALS: ' num2str(vr.session.nTrials)];
+vr.text(3).string = ['REWARDS: ' num2str(vr.session.nCorrect)];
+vr.text(4).string = ['PRCT: ' num2str(vr.session.pCorrect)];
+vr.text(5).string = ['LENGTH: ', num2str(vr.trial(vr.tN).stemLength)];
+end
 
 
 % --- RUNTIME code: executes on every iteration of the ViRMEn engine.
@@ -142,7 +152,7 @@ if vr.isITI
     % check to see if the ITI has elasped and if so come out of the ITI,
     % increment the trial counter, and set the mouse at the start of the
     % maze.
-    if toc(vr.trial(tN).itiTic)>vr.trial(vr.tN).itiDuration
+    if toc(vr.trial(vr.tN).itiTic)>vr.trial(vr.tN).itiDuration
         vr.isITI = 0;
         % increment the trial number
         vr.tN = vr.tN+1;
@@ -153,7 +163,7 @@ if vr.isITI
     else
         % wait.
         % set mouse position to the start position
-        vr.position = vr.trial(tN).startPosition;
+        vr.position = vr.trial(vr.tN).startPosition;
     end
     
     
@@ -187,7 +197,7 @@ if vr.mazeEnded
     % save end position
     vr.trial(vr.tN).endPosition = vr.position;
     % make world invisible
-    vr.worlds{1}.surface.visible(:) = 1;
+    vr.worlds{1}.surface.visible(:) = 0;
     % enter the ITI
     vr.isITI = 1;
     % start the ITI counter
@@ -210,12 +220,12 @@ if vr.mazeEnded
     % compute rewards per minute as if every trial was like this one
     vr.trial(vr.tN).duration = toc(vr.trial(vr.tN).tic);
     rewardsPerMinute = 60/(vr.trial(vr.tN).duration+vr.trial(vr.tN).itiDuration);
-    if rewardsPerMinute > vr.targetRewardsPerMin
+    if rewardsPerMinute > vr.session.targetRPM
         % make the maze harder by making it longer
         vr.trial(vr.tN+1).stemLength = vr.trial(vr.tN).stemLength + 10;
     else
         % make the maze easier by making it shorter
-        vr.trial(vr.tN+1).stemLength = max(vr.minStemLength, vr.trial(vr.tN).stemLength - 10);
+        vr.trial(vr.tN+1).stemLength = max(vr.session.minStemLength, vr.trial(vr.tN).stemLength - 10);
     end
     
     vr.trial(vr.tN+1).trialN = vr.tN+1;
@@ -234,13 +244,14 @@ if vr.mazeEnded
     vr.exper.variables.stemLength = vr.trial(vr.tN+1).stemLength;
     
     %% update text boxes
-    
+    if vr.drawText
     vr.text(1).string = ['TIME: ' datestr(now-vr.session.startTime,'MM.SS')];
     vr.text(2).string = ['TRIALS: ' num2str(vr.session.nTrials)];
     vr.text(3).string = ['REWARDS: ' num2str(vr.session.nCorrect)];
     vr.text(4).string = ['PRCT: ' num2str(vr.session.pCorrect)];
     vr.text(5).string = ['LENGTH: ', num2str(vr.trial(vr.tN).stemLength)];
     vr.text(6).string = ['RPM: ', num2str(60/(vr.trial(vr.tN).duration+vr.trial(vr.tN).itiDuration))];
+    end
     
 end
 
