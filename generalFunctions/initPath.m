@@ -1,4 +1,4 @@
-function [vr] = initializePathVIRMEN(vr, experimenterRigID)
+function [vr] = initPath(vr, experimenterRigID)
 %INITIALIZEPATHVIRMEN This is a function to initialize virmen path
 %information run during the initialization block of all mazes
 
@@ -7,7 +7,7 @@ if nargin<2
 end
 
 vr.mazeName = func2str(vr.exper.experimentCode);
-vr.exper.variables.mouseNumber = sprintf('%03d',vr.mouseNum); %save mouse num in exper 
+% vr.exper.variables.mouseNumber = sprintf('%03d',vr.mouseNum); %save mouse num in exper 
 
 % get path info for specific experimenter strings
 switch experimenterRigID
@@ -15,25 +15,24 @@ switch experimenterRigID
     case 'default'
         % if experimenterRig was not defined
         vr.experimenter = 'XX';
-        path = ['C:\DATA\' vr.experimenter '\currentMice\' vr.experimenter sprintf('%03d',vr.mouseNum)];
+        path = ['C:\DATA\' vr.experimenter '\currentMice\' vr.experimenter sprintf('%03d',vr.exper.variables.mouseNumber)];
         tempPath = ['C:\DATA\' vr.experimenter '\temp'];
         
     case 'noah_deskPC'
         vr.experimenter = 'NP';
-        path = ['C:\DATA\' vr.experimenter '\currentMice\' vr.experimenter sprintf('%03d',vr.mouseNum)];
+        path = ['C:\DATA\' vr.experimenter '\currentMice\' vr.experimenter sprintf('%03d',vr.exper.variables.mouseNumber)];
         tempPath = ['C:\DATA\' vr.experimenter '\temp'];
         
     case 'noah_behaviorRig1'
         vr.experimenter = 'NP';
-        path = ['C:\DATA\' vr.experimenter '\currentMice\' vr.experimenter sprintf('%03d',vr.mouseNum)];
+        path = ['C:\DATA\' vr.experimenter '\currentMice\' vr.experimenter sprintf('%03d',vr.exper.variables.mouseNumber)];
         tempPath = ['C:\DATA\' vr.experimenter '\temp'];
         
     case 'lynn_behaviorRig1'
         vr.experimenter = 'LY';
-        path = ['C:\DATA\' vr.experimenter '\currentMice\' vr.experimenter sprintf('%03d',vr.mouseNum)];
+        path = ['C:\DATA\' vr.experimenter '\currentMice\' vr.experimenter sprintf('%03d',vr.exper.variables.mouseNumber)];
         tempPath = ['C:\DATA\' vr.experimenter '\temp'];
 end
-
 
 % make directories if they do not already exist 
 if ~exist(tempPath,'dir');
@@ -70,7 +69,8 @@ save(vr.pathTempMat,'exper');
 vr.fid = fopen(vr.pathTempDat,'w');
 
 %save tempFile
-save(vr.pathTempMatCell,'-struct','vr','conds');
+% ??? not sure what this is for
+%save(vr.pathTempMatCell,'-struct','vr','conds');
 
 end
 
