@@ -50,14 +50,6 @@ end
 if ~vr.debugMode
     % Start the DAQ acquisition
     daqreset; %reset DAQ in case it's still in use by a previous Matlab program
-    % setup nidaq session
-    
-    vr.daq = daq.createSession('ni');
-    
-    vr.ai.rotaryEncoder = vr.daq.addAnalogInputChannel('dev1','ai0','Voltage');
-    vr.ai.loadCell1 = vr.daq.addAnalogInputChannel('dev1','ai1','Voltage');
-    vr.ai.loadCell2 = vr.daq.addAnalogInputChannel('dev1','ai2','Voltage');
-    
     vr.ai = analoginput('nidaq','dev1'); % connect to the DAQ card
     addchannel(vr.ai,0:1); % start channels 0 and 1
     set(vr.ai,'samplerate',1000,'samplespertrigger',inf);

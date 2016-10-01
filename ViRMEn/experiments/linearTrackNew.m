@@ -30,10 +30,10 @@ function vr = initializationCodeFun(vr)
 % set whether in debug mode:
 vr.debugMode = 1;
 vr.imaging = 0;
-vr.drawText = 0;
+vr.drawText = 1;
 
 %
-vr.nTextFields = 6;
+vr.nTextFields = 1;
 
 % initialize vr.session
 % vr.session contains all variables that do not vary trial-by-trial. One
@@ -68,8 +68,8 @@ vr.trial = struct(...
     'trialN', 1,...
     'stemLength', 10,... % length of the stem
     'armLength', 0,... % length of the arms
-    'correctTarget', [0 str2num(vr.exper.variables.width)],... % XY coordinate defining the center of the reward zone
-    'correctRadius', str2num(vr.exper.variables.width),... % distance that the mouse needs to be from the reward location to get the reward
+    'correctTarget', [0 eval(vr.exper.variables.width)],... % XY coordinate defining the center of the reward zone
+    'correctRadius', eval(vr.exper.variables.width),... % distance that the mouse needs to be from the reward location to get the reward
     'incorrectTarget',[0 0],... % XY coordinate defining the center of the incorrect/punishment zone
     'incorrectRadius',0,... % distance that the mouse needs to be from incorrect loication for the trial to be counted as incorrect
     'startPosition', [0 0 0 0],... % position vector [X Y Z theta] defining where the mouse started the trial
@@ -112,10 +112,11 @@ vr = initDAQ(vr);
 % initialize text boxes
 cmap = lines(vr.nTextFields);
 for k = 1:vr.nTextFields
-    vr.text(k).string = '';
+    vr.text(k).string = upper('hello world');
     vr.text(k).position = [1 .8-(0.1*(k-1))];
-    vr.text(k).size = .03;
-    vr.text(k).color = cmap(k,:);
+    vr.text(k).size = .05;
+    vr.text(k).color = [1 1 1];%cmap(k,:);
+    vr.text(k).window = 2;
 end
 
 %% initialize first trial
@@ -135,12 +136,14 @@ vr.fun.euclideanDist = @(XY1,XY2)(sqrt(sum((XY1-XY2).^2)));
 % place incorrect target tower at incorrect location
 
 % make the textboxes
+
 if vr.drawText
-vr.text(1).string = ['TIME: ' datestr(now-vr.session.startTime,'MM.SS')];
-vr.text(2).string = ['TRIALS: ' num2str(vr.session.nTrials)];
-vr.text(3).string = ['REWARDS: ' num2str(vr.session.nCorrect)];
-vr.text(4).string = ['PRCT: ' num2str(vr.session.pCorrect)];
-vr.text(5).string = ['LENGTH: ', num2str(vr.trial(vr.tN).stemLength)];
+    vr.text(1).string = upper(['TIME ' datestr(now-vr.session.startTime,'MM.SS')]);
+%     vr.text(2).string = upper(['TRIALS: ' num2str(vr.session.nTrials)]);
+%     vr.text(3).string = upper(['REWARDS: ' num2str(vr.session.nCorrect)]);
+%     vr.text(4).string = upper(['PRCT: ' sprintf('%0.1f',vr.session.pCorrect)]);
+%     vr.text(5).string = upper(['LENGTH: ', num2str(vr.trial(vr.tN).stemLength)]);
+%     vr.text(6).string = upper(['RPM: ', '0']);
 end
 
 
@@ -263,17 +266,20 @@ if vr.mazeEnded
     %vr.exper.variables.stemLength = vr.trial(vr.tN+1).stemLength;
     
     %% update text boxes
-    if vr.drawText
-    vr.text(1).string = ['TIME: ' datestr(now-vr.session.startTime,'MM.SS')];
-    vr.text(2).string = ['TRIALS: ' num2str(vr.session.nTrials)];
-    vr.text(3).string = ['REWARDS: ' num2str(vr.session.nCorrect)];
-    vr.text(4).string = ['PRCT: ' num2str(vr.session.pCorrect)];
-    vr.text(5).string = ['LENGTH: ', num2str(vr.trial(vr.tN).stemLength)];
-    vr.text(6).string = ['RPM: ', num2str(60/(vr.trial(vr.tN).duration+vr.trial(vr.tN).itiDuration))];
-    end
+
     
     vr.mazeEnded = 0;
     
+end
+
+%%
+if vr.drawText
+    vr.text(1).string = upper(['TIME ' datestr(now-vr.session.startTime,'MM.SS')]);
+%     vr.text(2).string = upper(['TRIALS: ' num2str(vr.session.nTrials)]);
+%     vr.text(3).string = upper(['REWARDS: ' num2str(vr.session.nCorrect)]);
+%     vr.text(4).string = upper(['PRCT: ' sprintf('%0.1f',vr.session.pCorrect)]);
+%     vr.text(5).string = upper(['LENGTH: ', num2str(vr.trial(vr.tN).stemLength)]);
+%     vr.text(6).string = upper(['RPM: ', sprintf('%0.1',60/(vr.trial(vr.tN).duration+vr.trial(vr.tN).itiDuration))]);
 end
 
 %% update iter things that are not condition-dependent and that may have been altered during the iteration
