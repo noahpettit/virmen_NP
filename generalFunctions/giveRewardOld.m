@@ -1,9 +1,9 @@
-function [vr] = giveReward(vr,nRew)
+function [vr] = giveRewardOld(vr,nRew)
 %giveReward Function which delivers rewards using the Master-8 system
 %(instantaneous pulses)
 %   nRew - number of rewards to deliver
 
-sinDur = .06; %%cal 10/21/2016 %%was .06 %Calibrated to give 4ul for single reward, AH 7/24/15
+sinDur = .06*(0.8/0.5); %Calibrated to give 4ul for single reward, SNC 4/3/15
 
 if ~vr.debugMode
     actualRate = vr.ao.Rate; %get sample rate
@@ -14,6 +14,5 @@ if ~vr.debugMode
     startForeground(vr.ao);
 end
 
-vr.isReward = nRew;
-
 end
+

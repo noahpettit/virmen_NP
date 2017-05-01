@@ -6,77 +6,49 @@ if nargin<2
     experimenterRigID = 'default';
 end
 
-vr.mazeName = func2str(vr.exper.experimentCode);
-% vr.exper.variables.mouseNumber = sprintf('%03d',vr.mouseNum); %save mouse num in exper 
-
 % get path info for specific experimenter strings
 switch experimenterRigID
-    
     case 'default'
         % if experimenterRig was not defined
-        vr.experimenter = 'XX';
-        path = ['C:\DATA\' vr.experimenter '\currentMice\' vr.experimenter sprintf('%03d',vr.exper.variables.mouseNumber)];
-        tempPath = ['C:\DATA\' vr.experimenter '\temp'];
+        vr.session.experimenter = 'XX';
+        vr.session.savePathFinal = ['C:\DATA\' vr.session.experimenter '\currentMice\' vr.session.experimenter sprintf('%03d',eval(vr.exper.variables.mouseNumber))];
+        vr.session.savePathTemp = ['C:\DATA\' vr.session.experimenter '\currentMice\' vr.session.experimenter sprintf('%03d',eval(vr.exper.variables.mouseNumber)) filesep 'temp'];
+        vr.session.baseFilename = [vr.session.experimenter sprintf('%03d',eval(vr.exper.variables.mouseNumber)) datestr(vr.session.startTime,'_yymmdd_HHMMSS')];
         
     case 'noah_deskPC'
-        vr.experimenter = 'NP';
-        path = ['C:\DATA\' vr.experimenter '\currentMice\' vr.experimenter sprintf('%03d',vr.exper.variables.mouseNumber)];
-        tempPath = ['C:\DATA\' vr.experimenter '\temp'];
+        vr.session.experimenter = 'NP';
+        vr.session.savePathFinal = ['C:\DATA\' vr.session.experimenter '\currentMice\' vr.session.experimenter sprintf('%03d',eval(vr.exper.variables.mouseNumber))];
+        vr.session.savePathTemp = ['C:\DATA\' vr.session.experimenter '\currentMice\' vr.session.experimenter sprintf('%03d',eval(vr.exper.variables.mouseNumber)) filesep 'temp'];
+        vr.session.baseFilename = [vr.session.experimenter sprintf('%03d',eval(vr.exper.variables.mouseNumber)) datestr(vr.session.startTime,'_yymmdd_HHMMSS')];
         
     case 'noah_behaviorRig1'
-        vr.experimenter = 'NP';
-        path = ['C:\DATA\' vr.experimenter '\currentMice\' vr.experimenter sprintf('%03d',vr.exper.variables.mouseNumber)];
-        tempPath = ['C:\DATA\' vr.experimenter '\temp'];
-        
+        vr.session.experimenter = 'NP';
+        vr.session.savePathFinal = ['C:\DATA\' vr.session.experimenter '\currentMice\' vr.session.experimenter sprintf('%03d',eval(vr.exper.variables.mouseNumber))];
+        vr.session.savePathTemp = ['C:\DATA\' vr.session.experimenter '\currentMice\' vr.session.experimenter sprintf('%03d',eval(vr.exper.variables.mouseNumber)) filesep 'temp'];
+        vr.session.baseFilename = [vr.session.experimenter sprintf('%03d',eval(vr.exper.variables.mouseNumber)) datestr(vr.session.startTime,'_yymmdd_HHMMSS')];
+
     case 'lynn_behaviorRig1'
-        vr.experimenter = 'LY';
-        path = ['C:\DATA\' vr.experimenter '\currentMice\' vr.experimenter sprintf('%03d',vr.exper.variables.mouseNumber)];
-        tempPath = ['C:\DATA\' vr.experimenter '\temp'];
+        vr.session.experimenter = 'LY';
+        vr.session.savePathFinal = ['C:\DATA\' vr.session.experimenter '\currentMice\' vr.session.experimenter sprintf('%03d',eval(vr.exper.variables.mouseNumber))];
+        vr.session.savePathTemp = ['C:\DATA\' vr.session.experimenter '\currentMice\' vr.session.experimenter sprintf('%03d',eval(vr.exper.variables.mouseNumber)) filesep 'temp'];
+        vr.session.baseFilename = [vr.session.experimenter sprintf('%03d',eval(vr.exper.variables.mouseNumber)) datestr(vr.session.startTime,'_yymmdd_HHMMSS')];
+    
+    case 'lynn_behaviorRig2'
+        vr.session.experimenter = 'LY';
+        vr.session.savePathFinal = ['C:\DATA\' vr.session.experimenter '\currentMice\' vr.session.experimenter sprintf('%03d',eval(vr.exper.variables.mouseNumber))];
+        vr.session.savePathTemp = ['C:\DATA\' vr.session.experimenter '\currentMice\' vr.session.experimenter sprintf('%03d',eval(vr.exper.variables.mouseNumber)) filesep 'temp'];
+        vr.session.baseFilename = [vr.session.experimenter sprintf('%03d',eval(vr.exper.variables.mouseNumber)) datestr(vr.session.startTime,'_yymmdd_HHMMSS')];
+
+
 end
 
 % make directories if they do not already exist 
-if ~exist(tempPath,'dir');
-    mkdir(tempPath);
+if ~exist(vr.session.savePathFinal,'dir');
+    mkdir(vr.session.savePathFinal);
 end
-if ~exist(path,'dir')
-    mkdir(path);
+if ~exist(vr.session.savePathTemp,'dir')
+    mkdir(vr.session.savePathTemp);
 end
-
-vr.savePath = path;
-
-% now setup all the paths for saving the files
-vr.filenameTempMat = 'tempStorage.mat';
-vr.filenameTempMatCell = 'tempStorageCell.mat';
-vr.filenameTempDat = 'tempStorage.dat';
-vr.filenameMat = [vr.experimenter,vr.exper.variables.mouseNumber,'_',datestr(now,'yymmdd'),'.mat'];
-vr.filenameMatCell = [vr.experimenter,vr.exper.variables.mouseNumber,'_',datestr(now,'yymmdd'),'_Cell.mat'];
-vr.filenameDat = [vr.experimenter,vr.exper.variables.mouseNumber,'_',datestr(now,'yymmdd'),'.dat'];
-fileIndex = 0;
-fileList = what(path);
-% if the filename already exists:
-while sum(strcmp(fileList.mat,vr.filenameMat)) > 0
-    fileIndex = fileIndex + 1;
-    vr.filenameMat = [vr.experimenter,vr.exper.variables.mouseNumber,'_',datestr(now,'yymmdd'),'_vr_',num2str(fileIndex),'.mat'];
-    vr.filenameSessionMat = [vr.experimenter,vr.exper.variables.mouseNumber,'_',datestr(now,'yymmdd'),'_session_',num2str(fileIndex),'.mat'];
-    vr.filenameTrialMat = [vr.experimenter,vr.exper.variables.mouseNumber,'_',datestr(now,'yymmdd'),'_trial_',num2str(fileIndex),'.mat'];
-    vr.filenameIterMat = [vr.experimenter,vr.exper.variables.mouseNumber,'_',datestr(now,'yymmdd'),'_iter_',num2str(fileIndex),'.mat'];
-    vr.filenameMatCell = [vr.experimenter,vr.exper.variables.mouseNumber,'_',datestr(now,'yymmdd'),'_Cell_',num2str(fileIndex),'.mat'];
-    vr.filenameDat = [vr.experimenter,vr.exper.variables.mouseNumber,'_',datestr(now,'yymmdd'),'_',num2str(fileIndex),'.dat'];
-    fileList = what(path);
-end
-exper = copyVirmenObject(vr.exper); %#ok<NASGU>
-vr.pathTempMat = [tempPath,'\',vr.filenameTempMat];
-vr.pathTempMatCell = [tempPath,'\',vr.filenameTempMatCell];
-vr.pathTempDat = [tempPath,'\',vr.filenameTempDat];
-vr.pathMat = [path,'\',vr.filenameMat];
-vr.pathMatCell = [path,'\',vr.filenameMatCell];
-vr.pathDat = [path, '\',vr.filenameDat];
-save(vr.pathTempMat,'exper');
-vr.fid = fopen(vr.pathTempDat,'w');
-
-%save tempFile
-% ??? not sure what this is for
-%save(vr.pathTempMatCell,'-struct','vr','conds');
 
 end
 
