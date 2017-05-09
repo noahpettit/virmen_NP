@@ -16,32 +16,31 @@ code.termination = @terminationCodeFun;
 function vr = initializationCodeFun(vr)
 
 %% TODO:
-% fix text display
-% test reward delivery function
-% test ball movement function 
-% write save session
-% write save trial
-% write save iter
+% test reward delivery function & calibrate
 % write function for increasing the length of the maze (or general function
 % for refreshing world vertices after changing experiment variable)
-% write termination code
+% write termination code 
+% calibrate virmen unit to cm conversion & decide on ball gain 
+% add ability to push button to give reward manually
+
 
 
 % set whether in debug mode:
-vr.debugMode = 1;
+vr.debugMode = 0;
 vr.imaging = 0;
 vr.drawText = 1;
+vr.save = 1;
 
 %
-vr.nTextFields = 1;
+vr.nTextFields = 6;
 
 % initialize vr.session
 % vr.session contains all variables that do not vary trial-by-trial. One
 % copy of this is saved
 % each session.
 vr.session = struct(...
-    'experimenterRigID', 'noah_deskPC',...
-    'mouseNum', 1, ...%vr.exper.variables.mouseNumber, ...
+    'experimenterRigID', 'lynn_behaviorRig1',...
+    'mouseNum', vr.exper.variables.mouseNumber, ...
     'tic', tic,...
     'startTime', now(), ...
     'stopTime', [], ...
@@ -55,7 +54,11 @@ vr.session = struct(...
     'minStemLength', 3.1, ...
     'maxStemLength', 1000, ...
     'targetRPM',4, ...
-    'stemLengthIncrement',5 ...
+    'minRPM',0.2, ...
+    'stemLengthIncrement',3, ...
+    'forwardGain', -155, ...
+    'viewAngleGain', -1, ...
+    'trialMaxDuration', 45 ...
     );
 
 % initialize vr.trialInfo
@@ -68,11 +71,11 @@ vr.trial = struct(...
     'trialN', 1,...
     'stemLength', 10,... % length of the stem
     'armLength', 0,... % length of the arms
-    'correctTarget', [0 eval(vr.exper.variables.width)],... % XY coordinate defining the center of the reward zone
-    'correctRadius', eval(vr.exper.variables.width),... % distance that the mouse needs to be from the reward location to get the reward
+    'correctTarget', [0 str2num(vr.exper.variables.width)],... % XY coordinate defining the center of the reward zone
+    'correctRadius', str2num(vr.exper.variables.width),... % distance that the mouse needs to be from the reward location to get the reward
     'incorrectTarget',[0 0],... % XY coordinate defining the center of the incorrect/punishment zone
     'incorrectRadius',0,... % distance that the mouse needs to be from incorrect loication for the trial to be counted as incorrect
-    'startPosition', [0 0 0 0],... % position vector [X Y Z theta] defining where the mouse started the trial
+    'startPosition', [0 0 eval(vr.exper.variables.mouseHeight) pi/2],... % position vector [X Y Z theta] defining where the mouse started the trial
     'endPosition', [],... % position vector [X Y Z theta] defining where the mouse ended the trial
     'duration', [],... % duration of the trial in seconds
     'itiDuration', 3,... % duration of the post-trial ITI in seconds
@@ -112,11 +115,10 @@ vr = initDAQ(vr);
 % initialize text boxes
 cmap = lines(vr.nTextFields);
 for k = 1:vr.nTextFields
-    vr.text(k).string = upper('hello world');
-    vr.text(k).position = [1 .8-(0.1*(k-1))];
-    vr.text(k).size = .05;
-    vr.text(k).color = [1 1 1];%cmap(k,:);
-    vr.text(k).window = 2;
+    vr.text(k).string = '';
+    vr.text(k).position = [1.1 .8-(0.1*(k-1))];
+    vr.text(k).size = .03;
+    vr.text(k).color = cmap(k,:);
 end
 
 %% initialize first trial
@@ -136,21 +138,21 @@ vr.fun.euclideanDist = @(XY1,XY2)(sqrt(sum((XY1-XY2).^2)));
 % place incorrect target tower at incorrect location
 
 % make the textboxes
-
 if vr.drawText
-    vr.text(1).string = upper(['TIME ' datestr(now-vr.session.startTime,'MM.SS')]);
-%     vr.text(2).string = upper(['TRIALS: ' num2str(vr.session.nTrials)]);
-%     vr.text(3).string = upper(['REWARDS: ' num2str(vr.session.nCorrect)]);
-%     vr.text(4).string = upper(['PRCT: ' sprintf('%0.1f',vr.session.pCorrect)]);
-%     vr.text(5).string = upper(['LENGTH: ', num2str(vr.trial(vr.tN).stemLength)]);
-%     vr.text(6).string = upper(['RPM: ', '0']);
+vr.text(1).string = upper(['TIME: ' datestr(now-vr.session.startTime,'HH.MM.SS')]);
+vr.text(2).string = upper(['TRIALS: ' num2str(vr.session.nTrials)]);
+vr.text(3).string = upper(['REWARDS: ' num2str(0)]);
+vr.text(4).string = upper(['PRCT: ' num2str(vr.session.pCorrect)]);
+vr.text(5).string = upper(['LENGTH: ', num2str(vr.trial(vr.tN).stemLength)]);
 end
 
-
-% --- RUNTIME code: executes on every iteration of the ViRMEn engine.
+%% --- RUNTIME code: executes on every iteration of the ViRMEn engine.
 function vr = runtimeCodeFun(vr)
 
 % increment iteration counter
+
+
+
 vr.iN = vr.iN+1;
 vr.iter(vr.iN).iterN = vr.iN;
 vr.iter(vr.iN).tic = tic;
@@ -158,6 +160,17 @@ vr.iter(vr.iN).startTimeAbs = now();
 vr.iter(vr.iN).startTimeInTrial = toc(vr.trial(vr.tN).tic);
 vr.iter(vr.iN).startTimeInSession = toc(vr.session.tic);
 vr.iter(vr.iN).rewardN = 0;
+
+% increment trial duration
+vr.trial(vr.tN).duration = toc(vr.trial(vr.tN).tic);
+
+if vr.keyPressed==82;
+    if ~vr.debugMode
+        vr = giveReward(vr,1);
+    end
+    vr.trial(vr.tN).rewardN = vr.trial(vr.tN).rewardN+1;
+    vr.iter(vr.iN).rewardN = vr.iter(vr.iN).rewardN+1;
+end
 
 % if
 if vr.imaging
@@ -204,12 +217,31 @@ elseif vr.fun.euclideanDist(vr.position(1:2),vr.trial(vr.tN).correctTarget)<vr.t
     % location, end the trial and commence timeout. OR if the trial timeout
     % has been reached %% WARNING HARDCODED 30 s timeout
 elseif (vr.fun.euclideanDist(vr.position(1:2),vr.trial(vr.tN).incorrectTarget)<vr.trial(vr.tN).incorrectRadius) ...
-        || toc(vr.trial(vr.tN).tic) > 30
+        || toc(vr.trial(vr.tN).tic) > vr.session.trialMaxDuration
     % trial is incorrect
     vr.mazeEnded = 1;
     vr.trial(vr.tN).isCorrect = 0;
     vr.trial(vr.tN).isTimeout = 1;
     vr.trial(vr.tN).itiDuration = vr.session.incorrectITI;
+    
+    % if the mouse has not gotten a reward in the last 5 minutes, give it a
+    % reward.
+    durationWithoutReward = 0;
+    for k = vr.tN-1:-1:1
+        if vr.trial(k).rewardN==0
+            durationWithoutReward = durationWithoutReward + vr.trial(k).duration;
+            if durationWithoutReward > 60/vr.session.minRPM
+                if ~vr.debugMode
+                    vr = giveReward(vr,1);
+                end
+                vr.trial(vr.tN).rewardN = vr.trial(vr.tN).rewardN+1;
+                vr.iter(vr.iN).rewardN = vr.iter(vr.iN).rewardN+1;
+                break
+            end
+        else
+            break
+        end
+    end
     
 end
 
@@ -230,18 +262,16 @@ if vr.mazeEnded
     vr.session.nCorrect = sum([vr.trial(1:max(1,vr.tN-1)).isCorrect]);
     vr.session.pCorrect = vr.session.nCorrect/vr.session.nTrials;
     
-    
     % save the previous trial data
-    if vr.tN>1 && ~vr.debugMode
+    if vr.tN>1 && vr.save
         vr = saveTrial(vr,vr.tN-1);
-        vr = saveIter(vr,vr.tN-1);
-        vr = saveSession(vr,vr.tN-1);
     end
     
     %% update next trial parameters that change:
     % compute rewards per minute as if every trial was like this one
     vr.trial(vr.tN).duration = toc(vr.trial(vr.tN).tic);
     rewardsPerMinute = 60/(vr.trial(vr.tN).duration+vr.trial(vr.tN).itiDuration);
+    
     if rewardsPerMinute > vr.session.targetRPM
         % make the maze harder by making it longer
         vr.trial(vr.tN+1).stemLength = vr.trial(vr.tN).stemLength + vr.session.stemLengthIncrement;
@@ -251,7 +281,7 @@ if vr.mazeEnded
     end
     
     vr.trial(vr.tN+1).trialN = vr.tN+1;
-    vr.trial(vr.tN+1).startPosition = [0 -vr.trial(vr.tN+1).stemLength+str2num(vr.exper.variables.edgeRadius)+1 str2num(vr.exper.variables.mouseHeight) 0];
+    vr.trial(vr.tN+1).startPosition = [0 -vr.trial(vr.tN+1).stemLength+str2num(vr.exper.variables.edgeRadius)+1 str2num(vr.exper.variables.mouseHeight) pi/2];
     vr.trial(vr.tN+1).rewardN = 0;
     
     %% update next trial params that stay the same
@@ -266,23 +296,25 @@ if vr.mazeEnded
     %vr.exper.variables.stemLength = vr.trial(vr.tN+1).stemLength;
     
     %% update text boxes
-
+    if vr.drawText
+        vr.text(6).string = upper(['RPM: ', num2str(60/(vr.trial(vr.tN).duration+vr.trial(vr.tN).itiDuration))]);
+    end
     
     vr.mazeEnded = 0;
     
 end
 
 %%
-if vr.drawText
-    vr.text(1).string = upper(['TIME ' datestr(now-vr.session.startTime,'MM.SS')]);
-%     vr.text(2).string = upper(['TRIALS: ' num2str(vr.session.nTrials)]);
-%     vr.text(3).string = upper(['REWARDS: ' num2str(vr.session.nCorrect)]);
-%     vr.text(4).string = upper(['PRCT: ' sprintf('%0.1f',vr.session.pCorrect)]);
-%     vr.text(5).string = upper(['LENGTH: ', num2str(vr.trial(vr.tN).stemLength)]);
-%     vr.text(6).string = upper(['RPM: ', sprintf('%0.1',60/(vr.trial(vr.tN).duration+vr.trial(vr.tN).itiDuration))]);
-end
+    if vr.drawText
+        vr.text(1).string = upper(['TIME: ' datestr(now-vr.session.startTime,'HH.MM.SS')]);
+        vr.text(2).string = upper(['TRIALS: ' num2str(vr.session.nTrials)]);
+        vr.text(3).string = upper(['REWARDS: ' num2str(sum([vr.trial(:).rewardN]))]);
+        vr.text(4).string = upper(['PRCT: ' num2str(vr.session.pCorrect)]);
+        vr.text(5).string = upper(['LENGTH: ', num2str(vr.trial(vr.tN).stemLength)]);
+    end
 
 %% update iter things that are not condition-dependent and that may have been altered during the iteration
+
 vr.iter(vr.iN).trialN = vr.tN;
 vr.iter(vr.iN).isITI = vr.isITI;
 vr.iter(vr.iN).position = vr.position;
@@ -292,4 +324,6 @@ vr.iter(vr.iN).velocity = vr.velocity;
 
 % --- TERMINATION code: executes after the ViRMEn engine stops.
 function vr = terminationCodeFun(vr)
-save([vr.savePath, filesep, vr.filenameMat], 'vr', '-v7.3');
+if vr.save
+save([vr.session.savePathFinal, filesep, vr.session.baseFilename '_vr.mat'], 'vr', '-v7.3');
+end

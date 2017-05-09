@@ -1,4 +1,4 @@
-function code = tAlternatingTest
+function code = linearTrack_phase01
 % linearTrackNew   Code for the ViRMEn experiment linearTrackNew.
 %   code = linearTrackNew   Returns handles to the functions that ViRMEn
 %   executes during engine initialization, runtime and termination.
@@ -24,6 +24,7 @@ function vr = initializationCodeFun(vr)
 % add ability to push button to give reward manually
 
 
+
 % set whether in debug mode:
 vr.debugMode = 0;
 vr.imaging = 0;
@@ -31,68 +32,53 @@ vr.drawText = 1;
 vr.save = 1;
 
 %
-vr.nTextFields = 7;
+vr.nTextFields = 6;
 
 % initialize vr.session
 % vr.session contains all variables that do not vary trial-by-trial. One
-% copy of this is saved at the end of each session.
+% copy of this is saved
+% each session.
 vr.session = struct(...
     'experimenterRigID', 'lynn_behaviorRig1',...
-    'mazeName','tAlternating',... % change this to get the actual maze name from vr 
     'mouseNum', vr.exper.variables.mouseNumber, ...
-    'rewardSizeML', 0.004, ...
-    ... % ITI parameters
-    'incorrectITI', 1,...
-    'correctITI', 1, ...
-    'minITI',1,...
-    'maxITI',15,...
-    'incrementITI',0,...
-    ... % stem length parameters
-    'minStemLength', 100, ...
-    'maxStemLength', 100, ...
-    'incrementStemLength',3,...
-    ... % Arm length parameters
-    'minArmLength',2,...
-    'maxArmLength',50,...
-    'incrementArmLength',3,...
-    ... % RPM parameters
-    'targetRPM',4, ...
-    'minRPM',0.2, ...
-    ... % Movement gain parameters
-    'forwardGain', -100, ...
-    'viewAngleGain', -2, ...
-    ... % trial timeout duration
-    'trialMaxDuration', 45, ...
-    ... % parameters recorded during / throughout the session
-    'tic', tic,... 
-    'startTime', now(), ... 
+    'tic', tic,...
+    'startTime', now(), ...
     'stopTime', [], ...
     'nTrials', 0, ...
     'nCorrect', 0, ...
     'pCorrect', 0, ...
     'nRewards', 0, ...
-    'itiChoiceVisible', 1 ...
+    'rewardSizeML', 0.004, ...
+    'incorrectITI', 3,...
+    'correctITI', 3, ...
+    'minStemLength', 50, ...
+    'maxStemLength', 990, ...
+    'targetRPM',4, ...
+    'minRPM',0.2, ...
+    'stemLengthIncrement',10, ...
+    'forwardGain', -100, ...
+    'viewAngleGain', -1.5, ...
+    'trialMaxDuration', 45 ...
     );
 
 % initialize vr.trialInfo
 % vr.trial contains all information about individual trials
 % trial info is saved in every ITI of the subsequent trial. therefore only
 % complete trials are included.
+
 vr.trial = struct(...
     'tic',tic,...
     'trialN', 1,...
-    'stemLength', 100,... % length of the stem
-    'armLength', eval(vr.exper.variables.armLength),... % length of the arms
-    'correctTarget', [0 0],... % XY coordinate defining the center of the reward zone
-    'correctRadius', eval(vr.exper.variables.width)/2 + 2*eval(vr.exper.variables.edgeRadius),... % distance that the mouse needs to be from the reward location to get the reward
+    'stemLength', vr.session.minStemLength,... % length of the stem
+    'armLength', 0,... % length of the arms
+    'correctTarget', [0 str2num(vr.exper.variables.width)],... % XY coordinate defining the center of the reward zone
+    'correctRadius', str2num(vr.exper.variables.width),... % distance that the mouse needs to be from the reward location to get the reward
     'incorrectTarget',[0 0],... % XY coordinate defining the center of the incorrect/punishment zone
-    'incorrectRadius',eval(vr.exper.variables.width)/2 + 2*eval(vr.exper.variables.edgeRadius),... % distance that the mouse needs to be from incorrect loication for the trial to be counted as incorrect
-    'startPosition', [0 -(vr.session.minStemLength-vr.exper.variables.edgeRadius-0.1) eval(vr.exper.variables.mouseHeight) pi/2],... % position vector [X Y Z theta] defining where the mouse started the trial
+    'incorrectRadius',0,... % distance that the mouse needs to be from incorrect loication for the trial to be counted as incorrect
+    'startPosition', [0 -vr.session.minStemLength eval(vr.exper.variables.mouseHeight) pi/2],... % position vector [X Y Z theta] defining where the mouse started the trial
     'endPosition', [],... % position vector [X Y Z theta] defining where the mouse ended the trial
-    'targetDir', [], ... % target direction = sign of target position X value.
-    'turnDir',[],... % turn direction = sign of end position X value. 
     'duration', [],... % duration of the trial in seconds
-    'itiDuration', vr.session.minITI,... % duration of the post-trial ITI in seconds
+    'itiDuration', 3,... % duration of the post-trial ITI in seconds
     'trialStartTimeAbs', toc(vr.session.tic),... % time the trial started, relative to session start time
     'trialStopTimeAbs', [],... % time trial ended, relative to session start time
     'rewardN', 0,... % total number of rewards given on that trial
@@ -117,8 +103,7 @@ vr.iter = struct(...
     'isITI',[],... % whether the mouse is in the ITI
     'startTimeAbs',[],... % absolute time
     'startTimeInTrial',[],... % time in trial (from trial start)
-    'startTimeInSession',[], ... % time in session (from session start)
-    'pitchRollYaw',[]...
+    'startTimeInSession',[] ... % time in session (from session start)
     );
 
 % set up the path
@@ -142,21 +127,6 @@ vr.tN = 1;
 vr.isITI = 0;
 vr.mazeEnded = 0;
 
-vr.trial
-% randomize first turn direction
-vr.trial(vr.tN).targetDir = sign(rand(1)-0.5);
-vr.trial(vr.tN).startingPosition = [0 -(vr.trial(vr.tN).stemLength-vr.exper.variables.edgeRadius-0.1) eval(vr.exper.variables.mouseHeight) pi/2];
-% set arm length & stem length
-vr.exper.variables.stemLength = num2str(vr.trial(vr.tN).stemLength);
-vr.exper.variables.armLength = num2str(vr.trial(vr.tN).armLength);
-% reload world to update arm length
-vr.worlds{1} = loadVirmenWorld(vr.exper.worlds{1});
-% set reward positions
-vr.trial(vr.tN).correctTarget = ...
-    [vr.trial(vr.tN).targetDir*(vr.trial(vr.tN).armLength+eval(vr.exper.variables.width)/2), eval(vr.exper.variables.width)];
-vr.trial(vr.tN).incorrectTarget = ...
-    [-1*vr.trial(vr.tN).targetDir*(vr.trial(vr.tN).armLength+eval(vr.exper.variables.width)/2), eval(vr.exper.variables.width)];
-
 vr.position = vr.trial(vr.tN).startPosition;
 %vr.exper.variables.stemLength = vr.trial(vr.tN).stemLength;
 
@@ -173,22 +143,20 @@ vr.text(1).string = upper(['TIME: ' datestr(now-vr.session.startTime,'HH.MM.SS')
 vr.text(2).string = upper(['TRIALS: ' num2str(vr.session.nTrials)]);
 vr.text(3).string = upper(['REWARDS: ' num2str(0)]);
 vr.text(4).string = upper(['PRCT: ' num2str(vr.session.pCorrect)]);
+vr.text(5).string = upper(['LENGTH: ', num2str(vr.trial(vr.tN).stemLength)]);
 end
 
-%% Save  copy of the virmen directory exactly as it is when this code is run
-virmenArchivePath = [vr.session.savePathFinal filesep vr.session.experimenter sprintf('%03d',eval(vr.exper.variables.mouseNumber)) '_virmenArchive' filesep vr.session.baseFilename '_virmenArchive'];
-if ~exist(virmenArchivePath,'dir');
-    mkdir(virmenArchivePath);
+if vr.save
+save([vr.session.savePathFinal, filesep, vr.session.baseFilename '_vr.mat'], 'vr', '-v7.3');
 end
-copyfile('C:\Users\harveylab\Desktop\virmen_NP',virmenArchivePath);
-disp('virmen code archived');
+
 
 %% --- RUNTIME code: executes on every iteration of the ViRMEn engine.
 function vr = runtimeCodeFun(vr)
 
-global mvData;
-
 % increment iteration counter
+
+
 
 vr.iN = vr.iN+1;
 vr.iter(vr.iN).iterN = vr.iN;
@@ -248,7 +216,7 @@ elseif vr.fun.euclideanDist(vr.position(1:2),vr.trial(vr.tN).correctTarget)<vr.t
     vr.trial(vr.tN).rewardN = vr.trial(vr.tN).rewardN+1;
     vr.iter(vr.iN).rewardN = vr.iter(vr.iN).rewardN+1;
     
-    %vr.trial(vr.tN).itiDuration = vr.session.correctITI;
+    vr.trial(vr.tN).itiDuration = vr.session.correctITI;
     
     % otherwise, if the mouse is within the incorrect radius of the incorrect
     % location, end the trial and commence timeout. OR if the trial timeout
@@ -259,27 +227,12 @@ elseif (vr.fun.euclideanDist(vr.position(1:2),vr.trial(vr.tN).incorrectTarget)<v
     vr.mazeEnded = 1;
     vr.trial(vr.tN).isCorrect = 0;
     vr.trial(vr.tN).isTimeout = 1;
-    % vr.trial(vr.tN).itiDuration = vr.session.incorrectITI;
-    
-    
-end
-
-% if the incorrect or correct zones were reached, determine the conditions of the next trial.
-if vr.mazeEnded
-    % save end position
-    vr.trial(vr.tN).endPosition = vr.position;
-    vr.trial(vr.tN).turnDir = sign(vr.position(1));
-    % make world invisible
-    vr.worlds{1}.surface.visible(:) = 0;
-    % enter the ITI
-    vr.isITI = 1;
-    % start the ITI counter
-    vr.trial(vr.tN).itiTic = tic;
+    vr.trial(vr.tN).itiDuration = vr.session.incorrectITI;
     
     % if the mouse has not gotten a reward in the last 5 minutes, give it a
     % reward.
     durationWithoutReward = 0;
-    for k = vr.tN:-1:1
+    for k = vr.tN-1:-1:1
         if vr.trial(k).rewardN==0
             durationWithoutReward = durationWithoutReward + vr.trial(k).duration;
             if durationWithoutReward > 60/vr.session.minRPM
@@ -294,7 +247,21 @@ if vr.mazeEnded
             break
         end
     end
+    
+end
 
+% if the incorrect or correct zones were reached, determine the conditions of the next trial.
+if vr.mazeEnded
+    
+    % save end position
+    vr.trial(vr.tN).endPosition = vr.position;
+    % make world invisible
+    vr.worlds{1}.surface.visible(:) = 0;
+    % enter the ITI
+    vr.isITI = 1;
+    % start the ITI counter
+    vr.trial(vr.tN).itiTic = tic;
+    
     % update performance metrics
     vr.session.nTrials = vr.tN-1;
     vr.session.nCorrect = sum([vr.trial(1:max(1,vr.tN-1)).isCorrect]);
@@ -305,42 +272,37 @@ if vr.mazeEnded
         vr = saveTrial(vr,vr.tN-1);
     end
     
-%% update next trial params that stay the same
-    
-    vr.trial(vr.tN+1).startPosition =  vr.trial(vr.tN).startPosition;
-    vr.trial(vr.tN+1).armLength = vr.trial(vr.tN).armLength;
-    vr.trial(vr.tN+1).correctRadius = vr.trial(vr.tN).correctRadius;
-    vr.trial(vr.tN+1).incorrectRadius = vr.trial(vr.tN).incorrectRadius;
-
-    
     %% update next trial parameters that change:
-    % compute rewards per minute as if every trial was like this one & was
-    rewardsPerMinute = vr.trial(vr.tN).rewardN*(60/(vr.trial(vr.tN).duration+vr.trial(vr.tN).itiDuration));
+    % compute rewards per minute as if every trial was like this one
+    vr.trial(vr.tN).duration = toc(vr.trial(vr.tN).tic);
+    rewardsPerMinute = 60/(vr.trial(vr.tN).duration+vr.trial(vr.tN).itiDuration);
     
     if rewardsPerMinute > vr.session.targetRPM
-        % make the maze harder by increasing the ITI of the subsequent
-        vr.trial(vr.tN+1).itiDuration = vr.trial(vr.tN).itiDuration + vr.session.incrementITI;
+        % make the maze harder by making it longer
+        vr.trial(vr.tN+1).stemLength = vr.trial(vr.tN).stemLength + vr.session.stemLengthIncrement;
     else
         % make the maze easier by making it shorter
-        vr.trial(vr.tN+1).itiDuration = max(vr.session.minITI, vr.trial(vr.tN).itiDuration - vr.session.incrementITI);
+        vr.trial(vr.tN+1).stemLength = max(vr.session.minStemLength, vr.trial(vr.tN).stemLength - vr.session.stemLengthIncrement);
     end
     
-    % set the correct and incorrect target positions 
-    vr.trial(vr.tN+1).targetDir = -1*vr.trial(vr.tN).turnDir;
-    vr.trial(vr.tN+1).correctTarget = ...
-    [vr.trial(vr.tN+1).targetDir*(vr.trial(vr.tN+1).armLength+eval(vr.exper.variables.width)/2), eval(vr.exper.variables.width)];
-    vr.trial(vr.tN+1).incorrectTarget = ...
-    [-1*vr.trial(vr.tN+1).targetDir*(vr.trial(vr.tN+1).armLength+eval(vr.exper.variables.width)/2), eval(vr.exper.variables.width)];
-    
     vr.trial(vr.tN+1).trialN = vr.tN+1;
+    vr.trial(vr.tN+1).startPosition = [0 -vr.trial(vr.tN+1).stemLength+str2num(vr.exper.variables.edgeRadius)+1 str2num(vr.exper.variables.mouseHeight) pi/2];
     vr.trial(vr.tN+1).rewardN = 0;
+    
+    %% update next trial params that stay the same
+    
+    vr.trial(vr.tN+1).armLength = vr.trial(vr.tN).armLength;
+    vr.trial(vr.tN+1).correctTarget = vr.trial(vr.tN).correctTarget;
+    vr.trial(vr.tN+1).correctRadius = vr.trial(vr.tN).correctRadius;
+    vr.trial(vr.tN+1).incorrectTarget = vr.trial(vr.tN).incorrectTarget;
+    vr.trial(vr.tN+1).incorrectRadius = vr.trial(vr.tN).incorrectRadius;
     
     %% update maze for next trial
     %vr.exper.variables.stemLength = vr.trial(vr.tN+1).stemLength;
     
     %% update text boxes
     if vr.drawText
-        vr.text(6).string = upper(['RPM: ', num2str(rewardsPerMinute)]);
+        vr.text(6).string = upper(['RPM: ', num2str(60/(vr.trial(vr.tN).duration+vr.trial(vr.tN).itiDuration))]);
     end
     
     vr.mazeEnded = 0;
@@ -353,7 +315,7 @@ end
         vr.text(2).string = upper(['TRIALS: ' num2str(vr.session.nTrials)]);
         vr.text(3).string = upper(['REWARDS: ' num2str(sum([vr.trial(:).rewardN]))]);
         vr.text(4).string = upper(['PRCT: ' num2str(vr.session.pCorrect)]);
-        vr.text(5).string = upper(['ITI: ', num2str(vr.trial(vr.tN).itiDuration)]);
+        vr.text(5).string = upper(['LENGTH: ', num2str(vr.trial(vr.tN).stemLength)]);
     end
 
 %% update iter things that are not condition-dependent and that may have been altered during the iteration
@@ -362,12 +324,8 @@ vr.iter(vr.iN).trialN = vr.tN;
 vr.iter(vr.iN).isITI = vr.isITI;
 vr.iter(vr.iN).position = vr.position;
 vr.iter(vr.iN).velocity = vr.velocity;
-vr.iter(vr.iN).pitchRollYaw = mvData;
 
 
 
 % --- TERMINATION code: executes after the ViRMEn engine stops.
 function vr = terminationCodeFun(vr)
-% if vr.save
-% save([vr.session.savePathFinal, filesep, vr.session.baseFilename '_vr.mat'], 'vr', '-v7.3');
-% end
