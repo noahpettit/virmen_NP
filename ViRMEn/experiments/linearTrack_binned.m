@@ -1,6 +1,6 @@
 function code = linearTrack_binned
-% linearTrack_binned   Code for the ViRMEn experiment linearTrack_binned.
-%   code = linearTrack_binned   Returns handles to the functions that ViRMEn
+% linearTrack_v3   Code for the ViRMEn experiment linearTrack_v3.
+%   code = linearTrack_v3   Returns handles to the functions that ViRMEn
 %   executes during engine initialization, runtime and termination.
 
 
@@ -15,11 +15,380 @@ code.termination = @terminationCodeFun;
 % --- INITIALIZATION code: executes before the ViRMEn engine starts.
 function vr = initializationCodeFun(vr)
 
+%% TODO:
+% calibrate virmen unit to cm conversion
 
+% set whether in debug mode:
+vr.debugMode = 1;
+vr.imaging = 0;
+vr.drawText = 1;
+vr.save = 1;
+%
+
+% initialize vr.session
+% vr.session contains all variables that do not vary trial-by-trial. One
+% copy of this is saved
+% each session.
+vr.session = struct(...
+    'sessionID', [vr.exper.variables.experimenter vr.exper.variables.mouseNumber '_' datestr(now,'YYmmDD_hhMMss')], ...
+    'experimenterRigID', 'loki',... % used for initializing the saving file path 
+    'nTrials', 0, ...
+    'nCorrect', 0, ...
+    'totalReward', 0, ...
+    'trialTypeNames',{'linear track'},...
+    'experimentCode', mfilename,... % change this to get the actual maze name from vr
+    ... % reward parameters
+    'rewardSizeML', 0.0034, ...
+    ... % trial duration parameters
+    'trialMaxDuration', 45, ... % timeout countdown clock
+    ... % RPM parameters
+    'targetRPM',1, ...
+    ... % gain parameters - perhaps move these to be hard-coded into movement function?
+    'forwardGain', -150, ...
+    'viewAngleGain', -1.0, ...
+    ... % DO NOT CHANGE
+    'start', now(), ...
+    'stop', [], ...
+    'criterionReached', 0, ...
+    ... % iter field names starting from index 19 in matrix
+    'maze',struct() ...
+    ); 
+
+% initialize vr.trialInfo
+% vr.trial contains all information about individual trials
+% trial info is saved in every ITI of the subsequent trial. therefore only
+% complete trials are included.
+vr.trial(1:5000,1) = struct(...
+    ...% the standard fields 
+    'N',0,...
+    'duration',0,...
+    'totalReward',0,...
+    'isCorrect',0,...
+    'type',1,...
+    'start',0,...
+    'world',vr.currentWorld,...
+    ...% general fields to all mazes:
+    'startPosition', [0 10 eval(vr.exper.variables.mouseHeight) pi/2],... % position vector [X Y Z theta] defining where the mouse started the trial
+... %%'endPosition', [],... % position vector [X Y Z theta] defining where the mouse ended the trial
+    'frozenDuration',0,... % frozen period at the end of the maze before ITI
+    'blackoutDuration',5,... % "blackout" ITI at the beginning of trial
+    'isTimeout', [], ...  % whether the trial timed out   
+...% 'stemLength',800 ...
+... maze-sepcific fields:
+    'licksInBin',[]...
+    );
+
+%     'correctCoord',[0 0],...
+%     'correctRadius',15,...
+%     'incorrectCoord',[],...
+%     'incorrectRadius',[]...
+
+% names of variables (fields in vr) that will be saved on each iteration,
+% followed by the number of elements in each of those.
+% Each variable will be flattened and saved in a
+% binary file in the order specified in saveVar.
+vr.session.saveVar = {...
+    'rawMovement',4,...
+    'position',4,...
+    'velocity',4,...
+    'iN',1,...
+    'tN',1,...
+    'isITI',1,...
+    'reward',1,...
+    'isLick',1,...
+    'isVisible',1,...
+    'dt',1,...
+    ... % custom fields
+    'punishment',1,...
+    'isFrozen',1, ... % whether the world is forzen
+    'trialEnded',1,...
+    'mazeEnded',1, ...
+    'isBlackout',1 ...
+};
+
+vr.rawMovement = [];
+vr.iN = 0;
+vr.tN = 1;
+vr.isITI = 0;
+vr.reward = 0;
+vr.isLick = 0;
+vr.isVisible = 1;
+vr.isFrozen = 0;
+vr.isBlackout = 0;
+vr.isPunishment = 0;
+
+% set up the path
+
+if ~vr.debugMode
+vr = initPath(vr,vr.session.experimenterRigID);
+vr = initDAQ(vr);
+end
+
+vr = initTextboxes(vr,16);
+
+%%
+bins = (randn(1,16).*0.04)+0.1;
+figure; plot(bins);
+sum(bins)
+
+
+%% define the bins for each maze
+n = 0;
+
+binEdges = 0:50:800;
+rProb = [0.1 0.1 0.1 0.1 0.1 0.5 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 1];
+pProb = rProb*0; % no punishment in pre-training
+n = n+1;
+
+vr.session.maze(n).binEdges = binEdges;
+vr.session.maze(n).rProb = rProb;
+vr.session.maze(n).pProb = pProb;
+
+% first real maze - maze 2
+rProb = [0.1 0.1 0.1 0 0.1 0.1 0.1 0.1 0.1 0.1 1 0.1 0.1 0.1 0.1 0.1];
+pProb = [0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0];
+n = n+1;
+
+vr.session.maze(n).binEdges = binEdges;
+vr.session.maze(n).rProb = rProb;
+vr.session.maze(n).pProb = pProb;
+
+% second real maze = maze 3
+rProb = [0.1 0.1 0.1 0.1 1 0.1 0.1 0.1 0.1 0 0.1 0.1 0.1 0.1 0.1 0.1];
+pProb = [0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0];
+n = n+1;
+
+vr.session.maze(n).binEdges = binEdges;
+vr.session.maze(n).rProb = rProb;
+vr.session.maze(n).pProb = pProb;
+
+% third real maze = maze 4
+rProb = [0.1 0.1 0.1 0.1 0.1 0.1 0.1 1 0.1 0.1 0.1 0.1 0.1 0.1 0 0.1];
+pProb = [0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0];
+n = n+1;
+
+vr.session.maze(n).binEdges = binEdges;
+vr.session.maze(n).rProb = rProb;
+vr.session.maze(n).pProb = pProb;
+
+%% initialize first trial
+vr.tN = 1;
+
+vr.mazeEnded = 0;
+vr.trialEnded = 0;
+
+vr.trial.N = vr.tN;
+vr.trial.start = now();
+vr.position = vr.trial(vr.tN).startPosition;
+
+% vr.exper.variables.stemLength = num2str(vr.trial(vr.tN).stemLength);
+%% define helper functions
+% vr.fun.euclideanDist = @(XY1,XY2)(sqrt(sum((XY1-XY2).^2)));
+
+%% Save copy of the virmen directory exactly as it is when this code is run
+virmenArchivePath = [vr.session.savePathFinal filesep vr.session.experimenter sprintf('%03d',eval(vr.exper.variables.mouseNumber)) '_virmenArchive' filesep vr.session.baseFilename '_virmenArchive'];
+if ~exist(virmenArchivePath,'dir')
+    mkdir(virmenArchivePath);
+end
+copyfile('C:\Users\harveyadmin\Desktop\virmen',virmenArchivePath);
+disp('virmen code archived');
+
+if vr.save
+    save([vr.session.savePathFinal, filesep, vr.session.baseFilename '_vr.mat'], 'vr', '-v7.3');
+end
+disp('vr structure saved');
+
+vr.arduino = [];
+vr = giveRewardPump(vr,1);
+vr = rewardTone(vr,1);
+
+vr.iterN = 0;
 
 % --- RUNTIME code: executes on every iteration of the ViRMEn engine.
 function vr = runtimeCodeFun(vr)
 
+% increment iteration counter
+global mvData;
+global lickData;
+
+
+vr.rawMovement = mvData;
+vr.iN = vr.iN+1;
+vr.tN = vr.tN;
+vr.reward = 0;
+vr.punishment = 0;
+
+vr.isLick = lickData;
+vr.isVisible = ~vr.isBlackout;
+
+mazeN = vr.trial(vr.tN).mazeN;
+binN = find(vr.session.maze(mazeN).binEdges<vr.position(2),1,'first');
+
+
+if isempty(vr.trial(vr.tN).licksInBin)
+    vr.trial(vr.tN).licksInBin = zeros(size(vr.session.maze(mazeN).binEdges(1:end-1)));
+end
+
+
+switch vr.keyPressed
+    case 82
+        % R key to deliver reward manually
+    vr = giveRewardPump(vr,1);
+    vr = rewardTone(vr,1);
+    vr.reward = vr.reward + 1;
+    vr.trial(vr.tN).totalReward = vr.trial(vr.tN).totalReward+1;
+    case 49
+        % "1" key pressed: switch world to world 1 and start new trial
+        [vr.trial(vr.tN+1:end).mazeN] = deal(1);
+    case 50
+        % "2" key pressed: switch world to world 2 at start of next trial
+        [vr.trial(vr.tN+1:end).mazeN] = deal(2);
+    case 51
+        % "3" key pressed: switch world to world 3 at start of next trial
+        [vr.trial(vr.tN+1:end).mazeN] = deal(3);
+    case 52 
+        % "4" key pressed: switch world to world 4 at start of next trial
+        [vr.trial(vr.tN+1:end).mazeN] = deal(4);
+end
+
+if vr.imaging
+    vr = iterStartPulse(vr); % pulse indicating the start of the iteration
+    vr = iterGradedVoltage(vr); % graded pulse indicating mod(iterationNumber,10)
+    vr = iterRandomPulse(vr); % random one or zero
+end
+
+%% MAZE CONDITION CHECK
+
+% check to see if world is frozen
+if vr.isFrozen
+% WORLD IS FROZEN
+    if toc(vr.frozenTic)>vr.trial(vr.tN).frozenDuration
+        %timer has elapsed, start new trial
+        vr.isFrozen = 0;
+        vr.trialEnded = 1;
+    end
+
+% check to see if mouse is in ITI
+elseif vr.isBlackout
+    % check to see if the delay has elasped 
+    if toc(vr.blackoutTic)>vr.trial(vr.tN).blackoutDuration
+        % then make sure that the world is invisible
+        disp('blackout ended');
+        vr.position = vr.trial(vr.tN).startPosition;
+        vr.worlds{1}.surface.visible(:) = 1;
+        vr.exper.movementFunction = @moveWithDualSensors;
+        vr.isBlackout = 0;
+        vr.isVisible = 1;
+    end
+    
+%check to see if trial has timed out
+elseif toc(vr.trial(vr.tN).tic) > vr.session.trialMaxDuration
+% TRIAL TIMED OUT 
+    vr.mazeEnded = 1;
+    vr.isCorrect = 0;
+    vr.trial(vr.tN).isTimeout = 1;
+
+% check to see if the mouse is at the end of the maze
+elseif vr.position(2)>=0
+    vr.mazeEnded = 1;
+    vr.trial(vr.tN).isTimeout = 0;
+    
+% check to see if the mouse has licked
+elseif vr.isLick
+    % get the mouse's binned position in the maze
+
+    % find out if the mouse has already licked in this bin
+    if vr.trial(vr.tN).licksInBin(binN) == 0
+        % mouse has not licked in the bin
+        if rand<=vr.session.maze(mazeN).rProb(binN)
+            % give reward
+            vr = giveRewardPump(vr,1);
+            vr = rewardTone(vr,1);
+            vr.reward = vr.reward + 1;
+            vr.trial(vr.tN).totalReward = vr.trial(vr.tN).totalReward+1;
+        end
+        if rand<=vr.session.maze(mazeN).pProb(binN)
+            % give punishment (air puff)
+            vr = giveAirPuff(vr,1);
+%             vr = punishmentTone(vr,1);
+            vr.punishment = vr.punishment + 1;
+        end
+    end
+    vr.trial(vr.tN).licksInBin(binN) = vr.trial(vr.tN).licksInBin(binN)+1;      
+end
+
+%% MAZE END
+if vr.mazeEnded
+    disp('maze ended');
+    % make world invisible if trial timed out
+    if vr.trial(vr.tN).isTimeout
+        vr.worlds{1}.surface.visible(:) = 0;
+    end
+    
+    % start the frozen period
+    vr.frozenTic = tic;
+    vr.isFrozen = 1;
+    vr.exper.movementFunction = @moveWithKeyboard; 
+    
+    vr.mazeEnded = 0;
+end
+
+%% TRIAL END
+if vr.trialEnded
+    disp('trial ended');
+    vr.trial(vr.tN).duration = (now-vr.trial(vr.tN).start)*(24*60*60);
+ 
+    % update performance metrics
+    vr.session.nTrials = vr.tN;
+    vr.session.nCorrect = sum([vr.trial(:).isCorrect]);
+    vr.session.nRewards = num2str(sum([vr.trial(:).totalReward]));
+
+    %% SAVE DATA
+    if vr.save
+        vr = saveTrial(vr,vr.tN);
+        disp('data saved');
+    end
+        
+    %% NEW TRIAL STARTS HERE     
+    vr.trialEnded = 0;
+    vr.tN = vr.tN+1;
+    
+    vr.trial(vr.tN).N = vr.tN;    
+    vr.trial(vr.tN).rewardN = 0;
+    vr.trial(vr.tN).startPosition =  [0 -800 eval(vr.exper.variables.mouseHeight) pi/2];
+    
+    %% update text boxes
+    mazeN = vr.trial(vr.tN).mazeN;
+    
+%     vr.worlds{mazeN} = loadVirmenWorld(vr.exper.worlds{mazeN});
+    %% set the new maze
+    
+
+    vr.worlds{mazeN}.surface.visible(:) = 0;
+    vr.trial(vr.tN).blackoutTic = tic;
+    vr.isBlackout = 1;
+    
+end
+
+% % draw the text
+% if ~(vr.isFrozen || vr.isBlackout)
+%     if vr.drawText
+%         vr.text(1).string = upper(['TIME: ' datestr(now-vr.session.startTime,'HH.MM.SS')]);
+%         vr.text(2).string = upper(['TRIALS: ' num2str(vr.session.nTrials)]);
+%         vr.text(3).string = upper(['REWARDS: ' num2str(sum([vr.trial(:).rewardN]))]);
+%         vr.text(4).string = upper(['PRCT: ' num2str(vr.session.pCorrect)]);
+%         vr.text(5).string = upper(['LENGTH: ', num2str(vr.trial(vr.tN).stemLength)]);
+%         vr.text(7).string = upper(['TDIST: ', num2str(abs(vr.trial(vr.tN).correctTarget(1)))]);
+%         vr.text(10).string = upper(['FRZN: ', num2str(abs(vr.trial(vr.tN).frozenDuration))]);
+%         vr.text(12).string = upper(['BO: ', num2str(abs(vr.trial(vr.tN).blackoutDuration))]);
+% %         vr.text(13).string = upper(['MAXBO: ', num2str(abs(vr.trial(vr.tN).itiMaxBlackout))]);
+%         vr.text(14).string = upper(['FR: ' num2str(round(length(vr.iter)/toc(vr.iter(1).tic)))]);
+% %         vr.text(15).string = upper(['LRTG: ' num2str(rad2deg(vr.trial(vr.tN-1).rewardTowerDeg))]);
+%         vr.text(16).string = upper(['LEVELUP: ' num2str(vr.session.criterionReached)]);
+%     end
+% end
+% % save the iteration
+saveIter(vr);
 
 
 % --- TERMINATION code: executes after the ViRMEn engine stops.
