@@ -26,38 +26,21 @@ vr.save = 1;
 %
 
 % initialize vr.session
-% vr.session contains all variables that do not vary trial-by-trial. One
-% copy of this is saved
-% each session.
 vr.session = struct(...
-    'sessionID', [vr.exper.variables.experimenter vr.exper.variables.mouseNumber '_' datestr(now,'YYmmDD_hhMMss')], ...
-    'experimenterRigID', 'loki',... % used for initializing the saving file path 
-    'nTrials', 0, ...
-    'nCorrect', 0, ...
-    'totalReward', 0, ...
-    'trialTypeNames',{'linear track'},...
+    ...% default entries
+    'sessionID', [vr.exper.variables.mouseID '_' datestr(now,'YYmmDD_hhMMss')], ...
+    'rig',vr.exper.variables.rig,...
+    'experimentName', mfilename, ...
+    'startTime',now(),...
+    'trialTypeNames',{'linearTrack','world1','world2'},...
     'experimentCode', mfilename,... % change this to get the actual maze name from vr
-    ... % reward parameters
-    'rewardSizeML', 0.0034, ...
-    ... % trial duration parameters
-    'trialMaxDuration', 45, ... % timeout countdown clock
-    ... % RPM parameters
+    ... % custom fields
+    'trialMaxDuration', 90, ... % timeout countdown clock in seconds
     'targetRPM',1, ...
-    ... % gain parameters - perhaps move these to be hard-coded into movement function?
-    'forwardGain', -150, ...
-    'viewAngleGain', -1.0, ...
-    ... % DO NOT CHANGE
-    'start', now(), ...
-    'stop', [], ...
-    'criterionReached', 0, ...
-    ... % iter field names starting from index 19 in matrix
-    'maze',struct() ...
+    'criterionReached', 0 ...
     ); 
 
 % initialize vr.trialInfo
-% vr.trial contains all information about individual trials
-% trial info is saved in every ITI of the subsequent trial. therefore only
-% complete trials are included.
 vr.trial(1:5000,1) = struct(...
     ...% the standard fields 
     'N',0,...
@@ -75,19 +58,15 @@ vr.trial(1:5000,1) = struct(...
     'isTimeout', [], ...  % whether the trial timed out   
 ...% 'stemLength',800 ...
 ... maze-sepcific fields:
+    'rewardCondition',1,...
     'licksInBin',[]...
     );
-
-%     'correctCoord',[0 0],...
-%     'correctRadius',15,...
-%     'incorrectCoord',[],...
-%     'incorrectRadius',[]...
 
 % names of variables (fields in vr) that will be saved on each iteration,
 % followed by the number of elements in each of those.
 % Each variable will be flattened and saved in a
 % binary file in the order specified in saveVar.
-vr.session.saveVar = {...
+vr.session.saveOnIter = {...
     'rawMovement',4,...
     'position',4,...
     'velocity',4,...
@@ -120,10 +99,9 @@ vr.isPunishment = 0;
 % set up the path
 
 if ~vr.debugMode
-vr = initPath(vr,vr.session.experimenterRigID);
+vr = initPath(vr,vr.exper.variables.rig);
 vr = initDAQ(vr);
 end
-
 vr = initTextboxes(vr,16);
 
 %%
@@ -132,44 +110,47 @@ figure; plot(bins);
 sum(bins)
 
 
-%% define the bins for each maze
+%% define the reward and punishment locations (conditions) for each maze
 n = 0;
 
 binEdges = 0:50:800;
+% reward conditions are matched to world number, so will be matched to
+% watever vr.currentWorld is. 
+
+n = 1;
 rProb = [0.1 0.1 0.1 0.1 0.1 0.5 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 1];
 pProb = rProb*0; % no punishment in pre-training
-n = n+1;
-
-vr.session.maze(n).binEdges = binEdges;
-vr.session.maze(n).rProb = rProb;
-vr.session.maze(n).pProb = pProb;
+vr.condition(n).binEdges = binEdges;
+vr.condition(n).rProb = rProb;
+vr.condition(n).pProb = pProb;
+vr.condition(n).requiresLick = true;
 
 % first real maze - maze 2
+n = 2;
 rProb = [0.1 0.1 0.1 0 0.1 0.1 0.1 0.1 0.1 0.1 1 0.1 0.1 0.1 0.1 0.1];
 pProb = [0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0];
-n = n+1;
-
-vr.session.maze(n).binEdges = binEdges;
-vr.session.maze(n).rProb = rProb;
-vr.session.maze(n).pProb = pProb;
+vr.condition(n).binEdges = binEdges;
+vr.condition(n).rProb = rProb;
+vr.condition(n).pProb = pProb;
+vr.condition(n).requiresLick = true;
 
 % second real maze = maze 3
+n = 3;
 rProb = [0.1 0.1 0.1 0.1 1 0.1 0.1 0.1 0.1 0 0.1 0.1 0.1 0.1 0.1 0.1];
 pProb = [0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0];
-n = n+1;
-
-vr.session.maze(n).binEdges = binEdges;
-vr.session.maze(n).rProb = rProb;
-vr.session.maze(n).pProb = pProb;
+vr.condition(n).binEdges = binEdges;
+vr.condition(n).rProb = rProb;
+vr.condition(n).pProb = pProb;
+vr.condition(n).requiresLick = true;
 
 % third real maze = maze 4
+n = 4;
 rProb = [0.1 0.1 0.1 0.1 0.1 0.1 0.1 1 0.1 0.1 0.1 0.1 0.1 0.1 0 0.1];
 pProb = [0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0];
-n = n+1;
-
-vr.session.maze(n).binEdges = binEdges;
-vr.session.maze(n).rProb = rProb;
-vr.session.maze(n).pProb = pProb;
+vr.condition(n).binEdges = binEdges;
+vr.condition(n).rProb = rProb;
+vr.condition(n).pProb = pProb;
+vr.condition(n).requiresLick = true;
 
 %% initialize first trial
 vr.tN = 1;
@@ -181,9 +162,8 @@ vr.trial.N = vr.tN;
 vr.trial.start = now();
 vr.position = vr.trial(vr.tN).startPosition;
 
-% vr.exper.variables.stemLength = num2str(vr.trial(vr.tN).stemLength);
-%% define helper functions
-% vr.fun.euclideanDist = @(XY1,XY2)(sqrt(sum((XY1-XY2).^2)));
+startingCondition = eval(vr.exper.variables.startingCondition);
+
 
 %% Save copy of the virmen directory exactly as it is when this code is run
 virmenArchivePath = [vr.session.savePathFinal filesep vr.session.experimenter sprintf('%03d',eval(vr.exper.variables.mouseNumber)) '_virmenArchive' filesep vr.session.baseFilename '_virmenArchive'];
