@@ -259,8 +259,9 @@ mtf = dir(filename(1:end-8));
 if datenum(mtb.date) < datenum(mtf.date)
     [~, name, ~] = fileparts(filename);
 %     errordlg(['Built in function ''' name ''' has been modified. Please rename or delete the newer user version.'],'Error','modal');
-    button = questdlg(['Built-in function ''' name ''' has been modified. Choose action.'], ...
-        'Question','Keep both copies','Revert to built-in copy','Quit','Keep both copies');
+%     button = questdlg(['Built-in function ''' name ''' has been modified. Choose action.'], ...
+%         'Question','Keep both copies','Revert to built-in copy','Quit','Keep both copies');
+    button = 'Revert to built-in copy';
     switch button
         case 'Keep both copies'
             [path,file,ext] = fileparts(filename(1:end-8));
