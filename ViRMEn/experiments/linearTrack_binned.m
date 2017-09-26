@@ -1,6 +1,6 @@
-function code = tennisCourt
-% tennisCourt   Code for the ViRMEn experiment tennisCourt.
-%   code = tennisCourt   Returns handles to the functions that ViRMEn
+function code = linearTrack_binned
+% linearTrack_binned   Code for the ViRMEn experiment linearTrack_binned.
+%   code = linearTrack_binned   Returns handles to the functions that ViRMEn
 %   executes during engine initialization, runtime and termination.
 
 
@@ -14,8 +14,6 @@ code.termination = @terminationCodeFun;
 
 % --- INITIALIZATION code: executes before the ViRMEn engine starts.
 function vr = initializationCodeFun(vr)
-
-keyboard;
 
 
 
