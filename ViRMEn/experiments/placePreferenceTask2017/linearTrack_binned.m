@@ -103,7 +103,7 @@ vr = initPath(vr,vr.exper.variables.rig);
 vr = initDAQ(vr);
 end
 vr = initTextboxes(vr,16);
-
+archiveVirmenCode(
 %%
 bins = (randn(1,16).*0.04)+0.1;
 figure; plot(bins);
