@@ -15,21 +15,16 @@ if ~vr.debugMode
     vr.di.addDigitalChannel(vr.session.dev,vr.session.airPuffCh,'Voltage','OutputOnly');
     
     
+    startBackground(vr.ai),
+    pause(1e-2),
     
     % add analog output for sync signal
     if ~isempty(vr.session.analogSyncCh)
     vr.ao = daq.createSession('ni');
-    vr.ao.addAnalogOutputChannel(vr.session.dev,vr.session.analogSyncCh,'Voltage');
+    vr.ao.addAnalogOutputChannel('dev1','ao0','Voltage');
     vr.ao.Rate = 1e4;
     end
-    
-    if ~isempty(vr.session.digitalSyncCh)
-        vr.di.addDigitalChannel(vr.session.dev,vr.session.digitalSyncCh,'Voltage','OutputOnly');
-    end
-        
-    startBackground(vr.ai),
-    pause(1e-2),
-
+    if 
 end
 
 end

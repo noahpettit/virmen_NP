@@ -318,12 +318,14 @@ if vr.trialEnded
     
     vr.trial(vr.tN).N = vr.tN;    
     vr.trial(vr.tN).rewardN = 0;
-    vr.trial(vr.tN).startPosition =  [0 rand*100 eval(vr.exper.variables.mouseHeight) pi/2];
+    vr.trial(vr.tN).startPosition =  [0 -800 eval(vr.exper.variables.mouseHeight) pi/2];
     
     %% update text boxes
     mazeN = vr.trial(vr.tN).mazeN;
     
+%     vr.worlds{mazeN} = loadVirmenWorld(vr.exper.worlds{mazeN});
     %% set the new maze
+    
 
     vr.worlds{mazeN}.surface.visible(:) = 0;
     vr.trial(vr.tN).blackoutTic = tic;
