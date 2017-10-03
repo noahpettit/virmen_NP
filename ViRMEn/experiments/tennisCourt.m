@@ -15,6 +15,8 @@ code.termination = @terminationCodeFun;
 % --- INITIALIZATION code: executes before the ViRMEn engine starts.
 function vr = initializationCodeFun(vr)
 
+keyboard;
+
 
 
 % --- RUNTIME code: executes on every iteration of the ViRMEn engine.
