@@ -64,6 +64,8 @@ vr.session.saveOnIter = {...
 };
 
 % initialize vr.trialInfo
+% PROBLEM: we have 3 different terms for "trial type".
+% "world","condition",and "type". these should really all be rolled into one.... 
 vr.trial(1:5000,1) = struct(...
     ...% the standard fields 
     'N',0,...
@@ -72,17 +74,19 @@ vr.trial(1:5000,1) = struct(...
     'isCorrect',0,...
     'type',1,... % in this maze the trial type and the world are the same? This generates some redundancy and confusion
     'start',0,...
-    'world',vr.currentWorld,...
+...%'world',vr.currentWorld,... % FOR NOW ASSUMING THAT WORLD IS "TYPE". I don't really see any major disadvantage to this at the moment (except that loading the world is time intensive)
     ...% general fields to all mazes:
     'startPosition', [0 10 eval(vr.exper.variables.mouseHeight) pi/2],... % position vector [X Y Z theta] defining where the mouse started the trial
 ... %%'endPosition', [],... % position vector [X Y Z theta] defining where the mouse ended the trial
     'frozenDuration',0,... % frozen period at the end of the maze before ITI
     'blackoutDuration',5,... % "blackout" ITI at the beginning of trial
-    'isTimeout', [], ...  % whether the trial timed out   
+    'isTimeout', 0, ...  % whether the trial timed out   
 ...% 'stemLength',800 ...
 ... maze-sepcific fields:
-    'rewardCondition',1,...
-    'licksInBin',[]...
+... %     'rewardCondition',1,... assuming that this is the same as trial.type to avoid confustion.
+    'licksInBin',[],...
+    'rewardInBin',[],...
+    'punishmentInBin',[]...
     );
 
 
@@ -104,7 +108,6 @@ vr = initDAQ(vr);
 end
 vr = getRigSettings(vr);
 vr = initTextboxes(vr,16);
-archiveVirmenCode(vr);
 
 %% define the reward and punishment locations (conditions) for each maze
 
@@ -147,25 +150,26 @@ vr.condition(n).rProb = rProb;
 vr.condition(n).pProb = pProb;
 vr.condition(n).requiresLick = true;
 
+%%
+[vr.trial.licksInBin] = deal(vr.condition(1).rProb.*0);
+[vr.trial.rewardInBin] = deal(vr.condition(1).rProb.*0);
+[vr.trial.punishmentInBin] = deal(vr.condition(1).rProb.*0);
+
 %% initialize first trial
 vr.tN = 1;
 
 vr.mazeEnded = 0;
 vr.trialEnded = 0;
 
-vr.trial.N = vr.tN;
-vr.trial.start = now();
+vr.trial(vr.tN).N = vr.tN;
+vr.trial(vr.tN).start = now();
 vr.position = vr.trial(vr.tN).startPosition;
 
 vr.currentCondition = eval(vr.exper.variables.startingCondition);
 
-
 %% Save copy of the virmen directory exactly as it is when this code is run
 archiveVirmenCode(vr);
-
-vr.arduino = [];
-vr = giveRewardPump(vr,1);
-vr = rewardTone(vr,1);
+vr = getGitHash(vr);
 
 vr.iN = 0;
 
@@ -179,28 +183,19 @@ global lickData;
 
 vr.rawMovement = mvData;
 vr.iN = vr.iN+1;
-vr.tN = vr.tN;
 vr.reward = 0;
 vr.punishment = 0;
-
 vr.isLick = lickData;
 vr.isVisible = ~vr.isBlackout;
 
-mazeN = vr.trial(vr.tN).mazeN;
-binN = find(vr.session.maze(mazeN).binEdges<vr.position(2),1,'first');
-
-
-if isempty(vr.trial(vr.tN).licksInBin)
-    vr.trial(vr.tN).licksInBin = zeros(size(vr.session.maze(mazeN).binEdges(1:end-1)));
-end
-
+type = vr.trial(vr.tN).type;
+binN = find(vr.condition(type).binEdges<vr.position(2),1,'last');
 
 switch vr.keyPressed
     case 82
         % R key to deliver reward manually
-    vr = giveRewardPump(vr,1);
+    vr = giveReward(vr,1);
     vr = rewardTone(vr,1);
-    vr.reward = vr.reward + 1;
     vr.trial(vr.tN).totalReward = vr.trial(vr.tN).totalReward+1;
     case 49
         % "1" key pressed: switch world to world 1 

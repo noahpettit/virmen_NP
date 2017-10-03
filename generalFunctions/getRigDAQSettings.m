@@ -12,15 +12,6 @@ switch rigName
         ops.airPuffCh = 'p0.7';
         ops.analogSyncCh = 'ao1';
         ops.digitalSyncCh = 'p0.3';
-        
-        % base data directory settings
-        ops.dataDirectory = 'C:\DATA\Noah\';
-        
-        % reward calibration info
-        ops.sinDur = [0.6];
-        ops.mL = [0.004];
-        ops.uL = ops.mL./1000;
-        
     otherwise
         error('rig name not found! check getRigDAQSettings.m');
 end
