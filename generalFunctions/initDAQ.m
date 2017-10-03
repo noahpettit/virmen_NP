@@ -45,8 +45,6 @@ if ~vr.debugMode
     startBackground(vr.di);
     pause(1e-2),
     
-    keyboard;
-
 end
 
 end
