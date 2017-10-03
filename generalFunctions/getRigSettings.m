@@ -22,8 +22,21 @@ switch vr.session.rig
     
     case 'behaviorRig2'
     
-    case 'loki'            
-
+    case 'loki'
+        % save path
+        vr.session.savePathFinal = ['C:\DATA\' 'Noah\' vr.exper.variables.mouseID filesep vr.session.sessionID];
+        vr.session.savePathTemp = ['C:\DATA\' 'Noah\' vr.exper.variables.mouseID filesep vr.session.sessionID filesep 'temp'];
+        % daq settings
+        vr.session.dev = 'dev1';
+        vr.session.movementInput = 'ai1:3';
+        vr.session.lickCh = 'p0.5';
+        vr.session.rewardCh = 'ao0';
+        vr.session.airPuffCh = 'p0.7';
+        vr.session.analogSyncCh = 'ao1';
+        vr.session.digitalSyncCh = 'p0.3';
+        
+    otherwise
+        error('rig name did not match any of the specified strings. check getRigSettings.m file and make sure there is an entry for it.');
 end
 
 % make directories if they do not already exist 

@@ -4,6 +4,9 @@ virmenArchivePath = [vr.session.savePathFinal filesep 'virmenArchive' filesep vr
 if ~exist(virmenArchivePath,'dir')
     mkdir(virmenArchivePath);
 end
+% need to 
+P = mfilename('fullpath');
+[s,rhash] = system(['git -C ' P ' rev-parse HEAD'])
 copyfile(experimentCodeFullPath(1:strfind(check,[filesep 'experiments'])),virmenArchivePath);
 disp('virmen code archived');
 
