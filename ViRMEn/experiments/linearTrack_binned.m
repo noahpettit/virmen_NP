@@ -199,16 +199,13 @@ switch vr.keyPressed
     vr.trial(vr.tN).totalReward = vr.trial(vr.tN).totalReward+1;
     case 49
         % "1" key pressed: switch world to world 1 
-        [vr.trial(vr.tN+1:end).mazeN] = deal(1);
+        [vr.trial(vr.tN+1:end).type] = deal(1);
     case 50
         % "2" key pressed: switch world to world 2 
-        [vr.trial(vr.tN+1:end).mazeN] = deal(2);
+        [vr.trial(vr.tN+1:end).type] = deal(2);
     case 51
         % "3" key pressed: switch world to world 3 
-        [vr.trial(vr.tN+1:end).mazeN] = deal(3);
-    case 52 
-        % "4" key pressed: switch world to world 4 
-        [vr.trial(vr.tN+1:end).mazeN] = deal(4);
+        [vr.trial(vr.tN+1:end).type] = deal(3);
 end
 
 if vr.imaging
