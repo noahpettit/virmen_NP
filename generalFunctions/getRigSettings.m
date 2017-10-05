@@ -7,9 +7,10 @@ switch rigName
         % daq settings
         ops.dev = 'dev1';
         ops.movementInput = 'ai1:3';
-        ops.lickCh = 'p0.5';
+        ops.lickCh = 'port0/line5';
         ops.rewardCh = 'ao0';
-        ops.airPuffCh = 'p0.7';
+        ops.airPuffCh = 'port0/line7';
+        ops.doClock = {'Dev1/PFI1','Dev1/PFI2'};
         ops.analogSyncCh = 'ao1';
         ops.digitalSyncCh = 'p0.3';
         

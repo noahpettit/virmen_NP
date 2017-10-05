@@ -1,6 +1,5 @@
 function [vr] = giveReward(vr,amount,varargin)
 % reward delivery function
-
 switch nargin
     case 2
         units = 'uL'; %default. other valid unit is 'mL','pulseDur'
@@ -13,7 +12,7 @@ if ischar(vr)
     % the rig
     daqreset;
     rig = vr;
-    ops = getRigDAQSettings(rig);
+    ops = getRigSettings(rig);
     vr = [];
     % now add analog output channels (reward)
     vr.ao = daq.createSession('ni');
