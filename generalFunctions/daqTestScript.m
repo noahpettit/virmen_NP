@@ -1,14 +1,34 @@
-function vr = initDAQ(vr)
-% Start the DAQ acquisition
-if ~vr.debugMode
-    ops = getRigDAQSettings(vr.session.rig);
-    daqreset; %reset DAQ in case it's still in use by a previous Matlab program
-    
     % PUT ALL CHANNELS IN SAME SESSION TO ALLOW CLOCKED DIO
+    % you dont want all to be in the same session, since you need to be
+    % able to independently control 
+    % can you input single scan while background is running?
+    daqreset;
     % add analog input channels (ball movement)
     vr.daq = daq.createSession('ni');
-    vr.daq.addAnalogInputChannel(ops.dev,ops.movementInput,'Voltage','singleEnded');
+%     vr.daq.addAnalogInputChannel('dev1','ai1:3','Voltage'); % this syntax
+%     does not work!
+
     vr.daq.Rate = 1e3;
+    
+    vr.daq.addAnalogInputChannel('dev1','ai1','Voltage'); % this syntax
+    vr.daq.addDigitalChannel('dev1','port0/line0','OutputOnly');
+    vr.di.NotifyWhenDataAvailableExceeds=100;%
+    vr.daq.addlistener('DataAvailable', @(x,y)x);
+    % queue output channel
+    %%
+    tic;
+    vr.daq.outputSingleScan(ones(1,1));
+%     pause(1e-3);
+%     startBackground(vr.daq);
+    toc;
+   %% 
+    pause(0.1);
+%     
+    vr.daq.queueOutputData([1;1;1]);
+    vr.daq.startBackground();
+    
+    %%
+    
     % DO NOT USE NOTIFIER -> USE INPUT SINGLE SCAN
 %     vr.daq.NotifyWhenDataAvailableExceeds=10;% changed this to 10 to try to get faster response - 50 ms seems like a long time
 %     vr.daq.IsContinuous=1;
@@ -46,17 +66,3 @@ if ~vr.debugMode
     startBackground(vr.ai),
     startBackground(vr.di);
     pause(1e-2),
-    
-end
-
-end
-
-function avgMvData(src,event)
-    global mvData
-    mvData = mean(event.Data,1);
-end
-
-function avgLickData(src,event)
-    global lickData
-    lickData = mean(event.Data,1)>0.1; % needs to be licking more than 10% of the time or it does not count
-end
