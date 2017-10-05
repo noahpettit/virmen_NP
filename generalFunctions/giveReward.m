@@ -1,28 +1,44 @@
 function [vr] = giveReward(vr,amount,varargin)
 % reward delivery function
-switch nargin
+switch nargin        
     case 2
         units = 'uL'; %default. other valid unit is 'mL','pulseDur'
     case 3
         units = varargin{1};
 end
 
-if ischar(vr)
-    % then we are in manual or calibration mode, and vr specifies the name of
+% reward delivery function
+if ischar(vr) || isempty(vr)
+    % then we are in manual or test mode, and vr specifies the name of
     % the rig
     daqreset;
-    rig = vr;
-    ops = getRigSettings(rig);
+    ops = getRigSettings(vr);
     vr = [];
     % now add analog output channels (reward)
-    vr.ao = daq.createSession('ni');
-    vr.ao.addAnalogOutputChannel(ops.dev,ops.rewardCh,'Voltage');
-    vr.ao.Rate = 1e3;
-    vr.session.rig = rig;
-    vr.reward = 0;
+    % this section mimicks initDAQ
+    vr.do(1) = daq.createSession('ni');
+    vr.do(1).addDigitalChannel(ops.dev,ops.rewardCh,'OutputOnly');
+%     vr.do.addClockConnection(ops.doClock{1},ops.doClock{2},'ScanClock');
+    vr.session.rig = ops.rigName;
+end
+ops = getRigSettings(vr.session.rig);
+% check to see if timer has been initialized
+if ~isfield(vr, 'timers');
+    vr.timers = [];
 end
 
-ops = getRigSettings(vr.session.rig);
+% check to see if airpuff has been initialized
+if ~isfield(vr.timers, 'airpuff');
+    t = timer;
+    t.UserData = vr.do(1);
+    t.StartFcn = @(src,event) outputSingleScan(src.UserData,1);
+    t.TimerFcn = @(src,event) outputSingleScan(src.UserData,0);
+    t.ExecutionMode = 'singleShot';
+    t.BusyMode = 'queue';
+    vr.timers.reward = t;
+end
+
+
 
 switch units
     case 'uL' % default
@@ -33,11 +49,19 @@ switch units
         pulseDur = amount;
 end
 
-pulsedata=5.0*ones(round(vr.ao.Rate*pulseDur),1); %5V amplitude
-pulsedata(end)=0; %reset to 0V at last time point
+% use timer to continue running virmen.
+vr.timers.reward.StartDelay = pulseDur;
+start(vr.timers.reward);
 
-vr.ao.queueOutputData(pulsedata);
-startBackground(vr.ao);
+
+% pulsedata=5.0*ones(round(vr.ao.Rate*pulseDur),1); %5V amplitude
+% pulsedata(end)=0; %reset to 0V at last time point
+
+% vr.ao.queueOutputData(pulsedata);
+% startBackground(vr.ao);
+if ~isfield(vr,'reward');
+    vr.reward = 0;
+end
 
 vr.reward = vr.reward + amount;
 

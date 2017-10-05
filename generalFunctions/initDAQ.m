@@ -1,36 +1,37 @@
 function vr = initDAQ(vr)
 % Start the DAQ acquisition
-if ~vr.debugMode
-    ops = getRigDAQSettings(vr.session.rig);
+    if ~isfield(vr,'session');
+        vr.session = [];
+    end
+    if ~isfield(vr.session, 'rig');
+        ops = getRigSettings; % attempt to find automatically
+        vr.session.rig = ops.rigName;
+    else
+        ops = getRigSettings(vr.session.rig);
+    end
+    
     daqreset; %reset DAQ in case it's still in use by a previous Matlab program
     
     % PUT ALL CHANNELS IN SAME SESSION TO ALLOW CLOCKED DIO
     % add analog input channels (ball movement)
-    vr.daq = daq.createSession('ni');
-    vr.daq.addAnalogInputChannel(ops.dev,ops.movementInput,'Voltage','singleEnded');
-    vr.daq.Rate = 1e3;
-    % DO NOT USE NOTIFIER -> USE INPUT SINGLE SCAN
-%     vr.daq.NotifyWhenDataAvailableExceeds=10;% changed this to 10 to try to get faster response - 50 ms seems like a long time
-%     vr.daq.IsContinuous=1;
-%     vr.daq.addlistener('DataAvailable', @avgMvData);
+    vr.ai = daq.createSession('ni');
+    vr.ai.addAnalogInputChannel(ops.dev,ops.movementCh{1},'Voltage');
+    vr.ai.addAnalogInputChannel(ops.dev,ops.movementCh{2},'Voltage');
+    vr.ai.addAnalogInputChannel(ops.dev,ops.movementCh{3},'Voltage');
+    vr.ai.Rate = 1e3;
     
-    % now add the digital input channels (lick data)
-    vr.di = daq.createSession('ni');
-    vr.di.addDigitalChannel(ops.dev,ops.lickCh,'InputOnly');
-    vr.di.Rate = 1e3;
-    vr.di.IsContinuous=1;
-    vr.di.NotifyWhenDataAvailableExceeds=10;% every 10 ms average lick data
-    vr.di.addlistener('DataAvailable', @avgLickData);
+    % now add the counter input channels (lick data)
+    vr.ci = daq.createSession('ni');
+    vr.ci.addCounterInputChannel(ops.dev, ops.lickCh, 'EdgeCount');
     
-    % now add analog output channels (reward)
-    vr.ao = daq.createSession('ni');
-    vr.ao.addAnalogOutputChannel(ops.dev,ops.rewardCh,'Voltage','singleEnded');
-    vr.ao.Rate = 1e3;
-
+    % now add digital output channels (reward)
+    vr.do(1) = daq.createSession('ni');
+    vr.do(1).addDigitalChannel(ops.dev,ops.rewardCh,'OutputOnly');
+    vr.do(1).Rate = 1e3;
     % now add digital output channels (air puff)
-    vr.do = daq.createSession('ni');
-    vr.do.addDigitalChannel(ops.dev,ops.airPuffCh,'OutputOnly');
-    vr.do.Rate = 1e3;    
+    vr.do(2) = daq.createSession('ni');
+    vr.do(2).addDigitalChannel(ops.dev,ops.airPuffCh,'OutputOnly');
+    vr.do(2).Rate = 1e3;    
     
     % add analog output for sync signal
     if ~isempty(ops.analogSyncCh)
@@ -40,23 +41,7 @@ if ~vr.debugMode
     end
     
     if ~isempty(ops.digitalSyncCh)
-        vr.di.addDigitalChannel(ops.dev,ops.digitalSyncCh,'Voltage','OutputOnly');
+        vr.do(3) =  daq.createSession('ni');
+        vr.do(3).addDigitalChannel(ops.dev,ops.digitalSyncCh,'OutputOnly');
     end
-    
-    startBackground(vr.ai),
-    startBackground(vr.di);
-    pause(1e-2),
-    
-end
-
-end
-
-function avgMvData(src,event)
-    global mvData
-    mvData = mean(event.Data,1);
-end
-
-function avgLickData(src,event)
-    global lickData
-    lickData = mean(event.Data,1)>0.1; % needs to be licking more than 10% of the time or it does not count
 end

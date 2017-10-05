@@ -1,1 +1,4 @@
-giveAirpuff(vr,0.01)
+vr = initDAQ(vr);
+
+giveAirpuff(vr,0.1);
+giveReward(vr,4);

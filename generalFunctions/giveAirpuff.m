@@ -5,32 +5,42 @@ if ischar(vr)
     % the rig
     daqreset;
     rig = vr;
-    ops = getRigSettings(rig);
+    ops = getRigSettings;
     vr = [];
     % now add analog output channels (reward)
     % this section mimicks initDAQ
-    vr.do = daq.createSession('ni');
-    vr.do.addDigitalChannel(ops.dev,ops.airPuffCh,'OutputOnly');
-%     vr.do.addClockConnection(ops.doClock{1},ops.doClock{2},'ScanClock');
+    
+    % is there any reason you can't just put "initDAQ.m" here?
+    vr.do(1) = daq.createSession('ni');
+    
+    
+    vr.do(2) = daq.createSession('ni');
+    vr.do(2).addDigitalChannel(ops.dev,ops.airPuffCh,'OutputOnly');
+    
     vr.session.rig = rig;
     vr.reward = 0;
-    
+end
+
+% check to see if timer has been initialized
+if ~isfield(vr, 'timers');
+    vr.timers = [];
+end
+
+% check to see if airpuff has been initialized
+if ~isfield(vr.timers, 'airpuff');
     t = timer;
-    t.UserData = vr.do;
+    t.UserData = vr.do(2);
     t.StartFcn = @(src,event) outputSingleScan(src.UserData,1);
     t.TimerFcn = @(src,event) outputSingleScan(src.UserData,0);
-    t.StopFcn = @(src,event) delete(src);
     t.ExecutionMode = 'singleShot';
-    t.StartDelay = pulseDur;
     t.BusyMode = 'queue';
-    vr.do.airpuffTimer = t;
-
+    vr.timers.airpuff = t;
 end
 
 % use timer to continue running virmen. You lose a frame but I dont know
 % how else to do it
 
-
-start(vr.do.airpuffTimer)
+vr.timers.airpuff.StartDelay = pulseDur;
+start(vr.timers.airpuff);
 
 end
