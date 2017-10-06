@@ -28,7 +28,7 @@ if ~isfield(vr, 'timers');
 end
 
 % check to see if airpuff has been initialized
-if ~isfield(vr.timers, 'airpuff');
+if ~isfield(vr.timers, 'reward');
     t = timer;
     t.UserData = vr.do(1);
     t.StartFcn = @(src,event) outputSingleScan(src.UserData,1);
@@ -50,8 +50,10 @@ switch units
 end
 
 % use timer to continue running virmen.
-vr.timers.reward.StartDelay = pulseDur;
+vr.timers.reward.StartDelay = round(pulseDur.*1000)/1000;
+if strcmp(vr.timers.reward.Running,'off');
 start(vr.timers.reward);
+end
 
 
 % pulsedata=5.0*ones(round(vr.ao.Rate*pulseDur),1); %5V amplitude

@@ -19,10 +19,11 @@ function vr = initializationCodeFun(vr)
 % calibrate virmen unit to cm conversion
 
 % set whether in debug mode:
-vr.debugMode = 1;
+vr.debugMode = 0;
 vr.imaging = 0;
 vr.drawText = 0;
 vr.save = 0;
+daqreset;
 %
 
 % initialize vr.session
@@ -38,6 +39,7 @@ vr.session = struct(...
     'trialMaxDuration', 90, ... % timeout countdown clock in seconds
     'targetRPM',1 ...
     ); 
+
 s.session.trialTypeNames = {'linearTrack','world1','world2'};
 % names of variables (fields in vr) that will be saved on each iteration,
 % followed by the number of elements in each of those.
@@ -76,7 +78,7 @@ vr.trial(1:5000,1) = struct(...
     'start',0,...
 ...%'world',vr.currentWorld,... % FOR NOW ASSUMING THAT WORLD IS "TYPE". I don't really see any major disadvantage to this at the moment (except that loading the world is time intensive)
     ...% general fields to all mazes:
-    'startPosition', [0 10 eval(vr.exper.variables.mouseHeight) pi/2],... % position vector [X Y Z theta] defining where the mouse started the trial
+    'startPosition', [0 14 eval(vr.exper.variables.mouseHeight) 0],... % position vector [X Y Z theta] defining where the mouse started the trial
 ... %%'endPosition', [],... % position vector [X Y Z theta] defining where the mouse ended the trial
     'frozenDuration',0,... % frozen period at the end of the maze before ITI
     'blackoutDuration',5,... % "blackout" ITI at the beginning of trial
@@ -103,10 +105,8 @@ vr.isPunishment = 0;
 
 % set up the path
 
-if ~vr.debugMode
 vr = initDAQ(vr);
-end
-vr = getRigSettings(vr);
+vr = initPath(vr);
 vr = initTextboxes(vr,16);
 
 %% define the reward and punishment locations (conditions) for each maze
@@ -165,38 +165,46 @@ vr.trial(vr.tN).N = vr.tN;
 vr.trial(vr.tN).start = now();
 vr.position = vr.trial(vr.tN).startPosition;
 
-vr.currentCondition = eval(vr.exper.variables.startingCondition);
-
 %% Save copy of the virmen directory exactly as it is when this code is run
 archiveVirmenCode(vr);
 vr = getGitHash(vr);
 
 vr.iN = 0;
 
+vr.lastLickCount = 0;
+vr.ci.resetCounters;
+
 % --- RUNTIME code: executes on every iteration of the ViRMEn engine.
 function vr = runtimeCodeFun(vr)
+% first get movement input and 
+
 
 % increment iteration counter
 global mvData;
-global lickData;
 
+newCount = vr.ci.inputSingleScan;
+vr.isLick = newCount - vr.lastLickCount; 
+
+if vr.isLick
+    disp('lick!');
+end
 
 vr.rawMovement = mvData;
 vr.iN = vr.iN+1;
 vr.reward = 0;
 vr.punishment = 0;
-vr.isLick = lickData;
 vr.isVisible = ~vr.isBlackout;
 
-type = vr.trial(vr.tN).type;
-binN = find(vr.condition(type).binEdges<vr.position(2),1,'last');
+cond = vr.trial(vr.tN).type;
+binN = find(vr.condition(cond).binEdges<vr.position(2),1,'last');
 
-switch vr.keyPressed
+switch vr.keyPressed        
     case 82
         % R key to deliver reward manually
-    vr = giveReward(vr,1);
-    vr = rewardTone(vr,1);
-    vr.trial(vr.tN).totalReward = vr.trial(vr.tN).totalReward+1;
+        vr = giveReward(vr,20);
+        vr.trial(vr.tN).totalReward = vr.trial(vr.tN).totalReward+1;
+    case 80
+        vr = giveAirpuff(vr,0.5);
     case 49
         % "1" key pressed: switch world to world 1 
         [vr.trial(vr.tN+1:end).type] = deal(1);
@@ -207,6 +215,10 @@ switch vr.keyPressed
         % "3" key pressed: switch world to world 3 
         [vr.trial(vr.tN+1:end).type] = deal(3);
 end
+if ~isnan(vr.keyPressed)
+disp(vr.keyPressed);
+end
+
 
 if vr.imaging
     vr = iterGradedVoltage(vr); % graded pulse indicating mod(iterationNumber,10)
@@ -216,36 +228,26 @@ end
 %% MAZE CONDITION CHECK
 
 % check to see if world is frozen
-if vr.isFrozen
-% WORLD IS FROZEN
-    if toc(vr.frozenTic)>vr.trial(vr.tN).frozenDuration
-        %timer has elapsed, start new trial
-        vr.isFrozen = 0;
-        vr.trialEnded = 1;
-    end
-
-% check to see if mouse is in ITI
-elseif vr.isBlackout
+if vr.isBlackout
     % check to see if the delay has elasped 
     if toc(vr.blackoutTic)>vr.trial(vr.tN).blackoutDuration
         % then make sure that the world is invisible
         disp('blackout ended');
         vr.position = vr.trial(vr.tN).startPosition;
-        vr.worlds{vr.trial(vr.tN).mazeN}.surface.visible(:) = 1;
-        vr.exper.movementFunction = @moveWithDualSensors;
+        vr.worlds{cond}.surface.visible(:) = 1;
         vr.isBlackout = 0;
         vr.isVisible = 1;
     end
     
 %check to see if trial has timed out
-elseif toc(vr.trial(vr.tN).tic) > vr.session.trialMaxDuration
+elseif (now-vr.trial(vr.tN).start)*24*60*60 > vr.session.trialMaxDuration
 % TRIAL TIMED OUT 
     vr.mazeEnded = 1;
     vr.isCorrect = 0;
     vr.trial(vr.tN).isTimeout = 1;
 
 % check to see if the mouse is at the end of the maze
-elseif vr.position(2)>=0
+elseif vr.position(2)>=780
     vr.mazeEnded = 1;
     vr.trial(vr.tN).isTimeout = 0;
     
@@ -256,14 +258,12 @@ elseif vr.isLick
     % find out if the mouse has already licked in this bin
     if vr.trial(vr.tN).licksInBin(binN) == 0
         % mouse has not licked in the bin
-        if rand<=vr.session.maze(mazeN).rProb(binN)
+        if rand<=vr.condition(cond).rProb(binN)
             % give reward
             vr = giveReward(vr,1);
-            vr = rewardTone(vr,1);
-            vr.reward = vr.reward + 1;
             vr.trial(vr.tN).totalReward = vr.trial(vr.tN).totalReward+1;
         end
-        if rand<=vr.session.maze(mazeN).pProb(binN)
+        if rand<=vr.condition(cond).pProb(binN)
             % give punishment (air puff)
             vr = giveAirPuff(vr,1);
             vr.punishment = vr.punishment + 1;
@@ -277,14 +277,13 @@ if vr.mazeEnded
     disp('maze ended');
     % make world invisible if trial timed out
     if vr.trial(vr.tN).isTimeout
-        vr.worlds{1}.surface.visible(:) = 0;
     end
     
-    % start the frozen period
-    vr.frozenTic = tic;
-    vr.isFrozen = 1;
-    vr.exper.movementFunction = @moveWithKeyboard; 
-    
+    vr.worlds{cond}.surface.visible(:) = 0;
+    vr.isBlackout = 1;
+    vr.isVisible = 0;
+    vr.blackoutTic = tic;
+
     vr.mazeEnded = 0;
 end
 
@@ -310,10 +309,10 @@ if vr.trialEnded
     
     vr.trial(vr.tN).N = vr.tN;    
     vr.trial(vr.tN).rewardN = 0;
-    vr.trial(vr.tN).startPosition =  [0 rand*100 eval(vr.exper.variables.mouseHeight) pi/2];
+    vr.trial(vr.tN).startPosition =  [0 randi(12,112) eval(vr.exper.variables.mouseHeight) 0];
     
     %% update text boxes
-    mazeN = vr.trial(vr.tN).mazeN;
+    mazeN = vr.trial(vr.tN).type;
     
     %% set the new maze
 
@@ -341,7 +340,7 @@ end
 %     end
 % end
 % % save the iteration
-saveIter(vr);
+% saveIter(vr);
 
 
 % --- TERMINATION code: executes after the ViRMEn engine stops.

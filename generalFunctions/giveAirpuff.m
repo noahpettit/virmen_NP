@@ -12,8 +12,6 @@ if ischar(vr)
     
     % is there any reason you can't just put "initDAQ.m" here?
     vr.do(1) = daq.createSession('ni');
-    
-    
     vr.do(2) = daq.createSession('ni');
     vr.do(2).addDigitalChannel(ops.dev,ops.airPuffCh,'OutputOnly');
     
@@ -41,6 +39,8 @@ end
 % how else to do it
 
 vr.timers.airpuff.StartDelay = pulseDur;
+if strcmp(vr.timers.airpuff.Running,'off');
 start(vr.timers.airpuff);
+end
 
 end

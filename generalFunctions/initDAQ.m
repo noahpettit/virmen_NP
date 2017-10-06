@@ -18,7 +18,11 @@ function vr = initDAQ(vr)
     vr.ai.addAnalogInputChannel(ops.dev,ops.movementCh{1},'Voltage');
     vr.ai.addAnalogInputChannel(ops.dev,ops.movementCh{2},'Voltage');
     vr.ai.addAnalogInputChannel(ops.dev,ops.movementCh{3},'Voltage');
-    vr.ai.Rate = 1e3;
+    % add notifier?
+    vr.ai.Rate = (1e3);
+    vr.ai.NotifyWhenDataAvailableExceeds=50;
+    vr.ai.IsContinuous=1;
+    vr.aiListener = vr.ai.addlistener('DataAvailable', @avgMvData);
     
     % now add the counter input channels (lick data)
     vr.ci = daq.createSession('ni');
@@ -44,4 +48,12 @@ function vr = initDAQ(vr)
         vr.do(3) =  daq.createSession('ni');
         vr.do(3).addDigitalChannel(ops.dev,ops.digitalSyncCh,'OutputOnly');
     end
+    
+    startBackground(vr.ai);
+    pause(1e-2);
+end
+
+function avgMvData(src,event)
+    global mvData
+    mvData = mean(event.Data,1);
 end
