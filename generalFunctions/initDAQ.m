@@ -39,15 +39,16 @@ function vr = initDAQ(vr)
     
     % add analog output for sync signal
     if ~isempty(ops.analogSyncCh)
-    vr.ao = daq.createSession('ni');
-    vr.ao.addAnalogOutputChannel(ops.dev,ops.analogSyncCh,'Voltage');
-    vr.ao.Rate = 1e4;
+        vr.ao = daq.createSession('ni');
+        vr.ao.addAnalogOutputChannel(ops.dev,ops.analogSyncCh,'Voltage');
+        vr.ao.addDigitalChannel(ops.dev,ops.digitalSyncCh,'OutputOnly');
+        vr.ao.Rate = 1e3;
     end
     
-    if ~isempty(ops.digitalSyncCh)
-        vr.do(3) =  daq.createSession('ni');
-        vr.do(3).addDigitalChannel(ops.dev,ops.digitalSyncCh,'OutputOnly');
-    end
+%     if ~isempty(ops.digitalSyncCh)
+%         vr.do(3) =  daq.createSession('ni');
+%         vr.do(3).addDigitalChannel(ops.dev,ops.digitalSyncCh,'OutputOnly');
+%     end
     
     startBackground(vr.ai);
     pause(1e-2);

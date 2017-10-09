@@ -19,10 +19,10 @@ function vr = initializationCodeFun(vr)
 % calibrate virmen unit to cm conversion
 
 % set whether in debug mode:
-vr.debugMode = 0;
-vr.imaging = 0;
+% vr.debugMode = 0;
+% % vr.imaging = 0;
 vr.drawText = 0;
-vr.save = 0;
+% vr.save = 0;
 daqreset;
 %
 
@@ -45,26 +45,27 @@ s.session.trialTypeNames = {'linearTrack','world1','world2'};
 % followed by the number of elements in each of those.
 % Each variable will be flattened and saved in a
 % binary file in the order specified in saveVar.
-vr.session.saveOnIter = {...
-    'rawMovement',4,...
-    'position',4,...
-    'velocity',4,...
-    'iN',1,...
-    'tN',1,...
-    'isITI',1,...
-    'reward',1,...
-    'isLick',1,...
-    'isVisible',1,...
-    'dt',1,...
+vr.saveOnIter = {...
+    'rawMovement',4;...
+    'position',4;...
+    'velocity',4;...
+    'iN',1;...
+    'tN',1;...
+    'isITI',1;...
+    'reward',1;...
+    'isLick',1;...
+    'isVisible',1;...
+    'dt',1;...
     ... % custom fields
-    'punishment',1,...
-    'isFrozen',1, ... % whether the world is forzen
-    'trialEnded',1,...
-    'mazeEnded',1, ...
-    'isBlackout',1, ...
-    'syncPulse',1 ...
+    'punishment',1;...
+    'isFrozen',1;... % whether the world is forzen
+    'trialEnded',1;...
+    'mazeEnded',1;...
+    'isBlackout',1;...
+    'analogSyncPulse',1;...
+    'digitalSyncPulse',1 ...
 };
-
+    
 % initialize vr.trialInfo
 % PROBLEM: we have 3 different terms for "trial type".
 % "world","condition",and "type". these should really all be rolled into one.... 
@@ -80,7 +81,6 @@ vr.trial(1:5000,1) = struct(...
     ...% general fields to all mazes:
     'startPosition', [0 14 eval(vr.exper.variables.mouseHeight) 0],... % position vector [X Y Z theta] defining where the mouse started the trial
 ... %%'endPosition', [],... % position vector [X Y Z theta] defining where the mouse ended the trial
-    'frozenDuration',0,... % frozen period at the end of the maze before ITI
     'blackoutDuration',5,... % "blackout" ITI at the beginning of trial
     'isTimeout', 0, ...  % whether the trial timed out   
 ...% 'stemLength',800 ...
@@ -104,7 +104,7 @@ vr.isBlackout = 0;
 vr.isPunishment = 0;
 
 % set up the path
-
+vr.ops = getRigSettings;
 vr = initDAQ(vr);
 vr = initPath(vr);
 vr = initTextboxes(vr,16);
@@ -173,11 +173,14 @@ vr.iN = 0;
 
 vr.lastLickCount = 0;
 vr.ci.resetCounters;
+vr.analogSyncPulse = 1;
+vr.digitalSyncPulse = 0;
 
 % --- RUNTIME code: executes on every iteration of the ViRMEn engine.
 function vr = runtimeCodeFun(vr)
-% first get movement input and 
+% first output synch pulse 
 
+% vr = outputSyncPulse(vr);
 
 % increment iteration counter
 global mvData;
@@ -185,10 +188,6 @@ global mvData;
 newCount = vr.ci.inputSingleScan;
 vr.isLick = newCount - vr.lastLickCount; 
 vr.lastLickCount = newCount;
-
-if vr.isLick
-    disp('lick!');
-end
 
 vr.rawMovement = mvData;
 vr.iN = vr.iN+1;
@@ -199,7 +198,9 @@ vr.isVisible = ~vr.isBlackout;
 cond = vr.trial(vr.tN).type;
 binN = find(vr.condition(cond).binEdges<vr.position(2),1,'last');
 
-switch vr.keyPressed        
+switch vr.keyPressed 
+    case 76
+        vr.isLick = 1;
     case 82
         % R key to deliver reward manually
         vr = giveReward(vr,20);
@@ -216,15 +217,20 @@ switch vr.keyPressed
         % "3" key pressed: switch world to world 3 
         [vr.trial(vr.tN+1:end).type] = deal(3);
 end
+
 if ~isnan(vr.keyPressed)
 disp(vr.keyPressed);
 end
 
-
-if vr.imaging
-    vr = iterGradedVoltage(vr); % graded pulse indicating mod(iterationNumber,10)
-    vr = iterRandomPulse(vr); % random one or zero
+if vr.isLick
+    disp('lick!');
 end
+
+
+% if isfield(vr.ao.addAnalogOutputChannel
+%     vr = iterGradedVoltage(vr); % graded pulse indicating mod(iterationNumber,10)
+%     vr = iterRandomPulse(vr); % random one or zero
+% end
 
 %% MAZE CONDITION CHECK
 
@@ -291,11 +297,10 @@ if vr.trialEnded
     vr.session.nRewards = num2str(sum([vr.trial(:).totalReward]));
 
     %% SAVE DATA
-    if vr.save
-        vr = saveTrial(vr,vr.tN);
-        disp('data saved');
-    end
-        
+    
+    vr = saveTrial(vr);
+    disp('trial data saved');
+
     %% NEW TRIAL STARTS HERE     
     vr.trialEnded = 0;
     vr.tN = vr.tN+1;
@@ -310,32 +315,35 @@ if vr.trialEnded
     
     %% set the new maze
     vr.position = vr.trial(vr.tN).startPosition;
-
     vr.currentWorld = vr.trial(vr.tN).type;
     vr.worlds{cond}.surface.visible(:) = 1;
     
 end
 
 % % draw the text
-% if ~(vr.isFrozen || vr.isBlackout)
-%     if vr.drawText
-%         vr.text(1).string = upper(['TIME: ' datestr(now-vr.session.startTime,'HH.MM.SS')]);
-%         vr.text(2).string = upper(['TRIALS: ' num2str(vr.session.nTrials)]);
-%         vr.text(3).string = upper(['REWARDS: ' num2str(sum([vr.trial(:).rewardN]))]);
-%         vr.text(4).string = upper(['PRCT: ' num2str(vr.session.pCorrect)]);
-%         vr.text(5).string = upper(['LENGTH: ', num2str(vr.trial(vr.tN).stemLength)]);
-%         vr.text(7).string = upper(['TDIST: ', num2str(abs(vr.trial(vr.tN).correctTarget(1)))]);
-%         vr.text(10).string = upper(['FRZN: ', num2str(abs(vr.trial(vr.tN).frozenDuration))]);
-%         vr.text(12).string = upper(['BO: ', num2str(abs(vr.trial(vr.tN).blackoutDuration))]);
-% %         vr.text(13).string = upper(['MAXBO: ', num2str(abs(vr.trial(vr.tN).itiMaxBlackout))]);
-%         vr.text(14).string = upper(['FR: ' num2str(round(length(vr.iter)/toc(vr.iter(1).tic)))]);
-% %         vr.text(15).string = upper(['LRTG: ' num2str(rad2deg(vr.trial(vr.tN-1).rewardTowerDeg))]);
-%         vr.text(16).string = upper(['LEVELUP: ' num2str(vr.session.criterionReached)]);
-%     end
-% end
+if vr.drawText
+    vr.text(1).string = upper(['TIME: ' datestr(now-vr.session.startTime,'HH.MM.SS')]);
+    vr.text(2).string = upper(['TRIAL: ' num2str(vr.tN)]);
+    vr.text(3).string = upper(['REWARDS: ' num2str(sum([vr.trial(:).totalReward]))]);
+    vr.text(4).string = upper(['CC: ' num2str(vr.trial(vr.tN).type)]);
+    vr.text(5).string = upper(['NC: ' num2str(vr.trial(vr.tN+1).type)]);
+
+    vr.text(6).string = upper(['LICK: ', num2str(vr.isLick)]);
+    vr.text(7).string = upper(['LIB: ', num2str(vr.trial(vr.tN).licksInBin)]);
+    vr.text(8).string = upper(['BIN: ', num2str(binN)]);
+%     vr.text(10).string = upper(['FRZN: ', num2str(abs(vr.trial(vr.tN).frozenDuration))]);
+%     vr.text(12).string = upper(['BO: ', num2str(abs(vr.trial(vr.tN).blackoutDuration))]);
+%     vr.text(13).string = upper(['MAXBO: ', num2str(abs(vr.trial(vr.tN).itiMaxBlackout))]);
+%     vr.text(14).string = upper(['FR: ' num2str(round(length(vr.iter)/toc(vr.iter(1).tic)))]);
+%     vr.text(15).string = upper(['LRTG: ' num2str(rad2deg(vr.trial(vr.tN-1).rewardTowerDeg))]);
+%     vr.text(16).string = upper(['LEVELUP: ' num2str(vr.session.criterionReached)]);
+end
 % % save the iteration
-% saveIter(vr);
+vr = saveIter(vr);
 
 
 % --- TERMINATION code: executes after the ViRMEn engine stops.
 function vr = terminationCodeFun(vr)
+
+fclose(vr.iterFileID);
+fclose(vr.trialFileID);

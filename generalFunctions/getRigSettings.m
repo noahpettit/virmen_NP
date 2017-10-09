@@ -22,6 +22,7 @@ switch rigName
         ops.rewardCh = 'port0/line2'; % note reward is now with digital channel!
         ops.airPuffCh = 'port0/line7';
         ops.doClock = {'Dev1/PFI1','Dev1/PFI2'};
+        ops.outputSyncSignal = 1;
         ops.analogSyncCh = 'ao1';
         ops.digitalSyncCh = 'port0/line3';
         

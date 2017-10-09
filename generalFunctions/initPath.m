@@ -14,3 +14,14 @@ end
 if ~exist(vr.session.savePathTemp,'dir')
     mkdir(vr.session.savePathTemp);
 end
+
+% now check if binary file exists
+if ~isfield(vr, 'trialFileID');
+vr.trialFileID = fopen([vr.session.savePathTemp filesep vr.session.sessionID '_trialBinary.bin'],'a');
+end
+
+% now check if binary file exists
+if ~isfield(vr, 'iterFileID');
+vr.iterFileID = fopen([vr.session.savePathTemp filesep vr.session.sessionID '_iterBinary.bin'],'a');
+end
+
