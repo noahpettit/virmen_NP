@@ -79,7 +79,7 @@ vr.trial(1:5000,1) = struct(...
     'start',0,...
 ...%'world',vr.currentWorld,... % FOR NOW ASSUMING THAT WORLD IS "TYPE". I don't really see any major disadvantage to this at the moment (except that loading the world is time intensive)
     ...% general fields to all mazes:
-    'startPosition', [0 14 eval(vr.exper.variables.mouseHeight) 0],... % position vector [X Y Z theta] defining where the mouse started the trial
+    'startPosition', [0 14 eval(vr.exper.variables.mouseHeight) pi/2],... % position vector [X Y Z theta] defining where the mouse started the trial
 ... %%'endPosition', [],... % position vector [X Y Z theta] defining where the mouse ended the trial
     'blackoutDuration',5,... % "blackout" ITI at the beginning of trial
     'isTimeout', 0, ...  % whether the trial timed out   
@@ -308,7 +308,7 @@ if vr.trialEnded
     vr.trial(vr.tN).start = now();
     vr.trial(vr.tN).N = vr.tN;    
     vr.trial(vr.tN).rewardN = 0;
-    vr.trial(vr.tN).startPosition =  [0 randi([12,112]) eval(vr.exper.variables.mouseHeight) 0];
+    vr.trial(vr.tN).startPosition =  [0 randi([12,112]) eval(vr.exper.variables.mouseHeight) pi/2];
     
     %% update text boxes
     cond = vr.trial(vr.tN).type;

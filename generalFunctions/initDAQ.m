@@ -15,9 +15,13 @@ function vr = initDAQ(vr)
     % PUT ALL CHANNELS IN SAME SESSION TO ALLOW CLOCKED DIO
     % add analog input channels (ball movement)
     vr.ai = daq.createSession('ni');
-    vr.ai.addAnalogInputChannel(ops.dev,ops.movementCh{1},'Voltage');
-    vr.ai.addAnalogInputChannel(ops.dev,ops.movementCh{2},'Voltage');
-    vr.ai.addAnalogInputChannel(ops.dev,ops.movementCh{3},'Voltage');
+    ch = vr.ai.addAnalogInputChannel(ops.dev,ops.movementCh{1},'Voltage');
+    ch.TerminalConfig = 'SingleEnded';
+    ch = vr.ai.addAnalogInputChannel(ops.dev,ops.movementCh{2},'Voltage');
+    ch.TerminalConfig = 'SingleEnded';
+    ch = vr.ai.addAnalogInputChannel(ops.dev,ops.movementCh{3},'Voltage');
+    ch.TerminalConfig = 'SingleEnded';
+
     % add notifier?
     vr.ai.Rate = (1e3);
     vr.ai.NotifyWhenDataAvailableExceeds=50;
@@ -31,11 +35,11 @@ function vr = initDAQ(vr)
     % now add digital output channels (reward)
     vr.do(1) = daq.createSession('ni');
     vr.do(1).addDigitalChannel(ops.dev,ops.rewardCh,'OutputOnly');
-    vr.do(1).Rate = 1e3;
+    vr.do(1).Rate = 1e2;
     % now add digital output channels (air puff)
     vr.do(2) = daq.createSession('ni');
     vr.do(2).addDigitalChannel(ops.dev,ops.airPuffCh,'OutputOnly');
-    vr.do(2).Rate = 1e3;    
+    vr.do(2).Rate = 1e2;    
     
     % add analog output for sync signal
     if ~isempty(ops.analogSyncCh)
@@ -49,7 +53,7 @@ function vr = initDAQ(vr)
 %         vr.do(3) =  daq.createSession('ni');
 %         vr.do(3).addDigitalChannel(ops.dev,ops.digitalSyncCh,'OutputOnly');
 %     end
-    
+    vr.ops = ops;
     startBackground(vr.ai);
     pause(1e-2);
 end
