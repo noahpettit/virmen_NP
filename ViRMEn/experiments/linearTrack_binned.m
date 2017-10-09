@@ -184,6 +184,7 @@ global mvData;
 
 newCount = vr.ci.inputSingleScan;
 vr.isLick = newCount - vr.lastLickCount; 
+vr.lastLickCount = newCount;
 
 if vr.isLick
     disp('lick!');
@@ -232,9 +233,7 @@ if vr.isBlackout
     % check to see if the delay has elasped 
     if toc(vr.blackoutTic)>vr.trial(vr.tN).blackoutDuration
         % then make sure that the world is invisible
-        disp('blackout ended');
-        vr.position = vr.trial(vr.tN).startPosition;
-        vr.worlds{cond}.surface.visible(:) = 1;
+        vr.trialEnded = 1;
         vr.isBlackout = 0;
         vr.isVisible = 1;
     end
@@ -274,17 +273,11 @@ end
 
 %% MAZE END
 if vr.mazeEnded
-    disp('maze ended');
-    % make world invisible if trial timed out
-    if vr.trial(vr.tN).isTimeout
-    end
-    
+    vr.mazeEnded = 0;
     vr.worlds{cond}.surface.visible(:) = 0;
+    vr.blackoutTic = tic;
     vr.isBlackout = 1;
     vr.isVisible = 0;
-    vr.blackoutTic = tic;
-
-    vr.mazeEnded = 0;
 end
 
 %% TRIAL END
@@ -307,18 +300,19 @@ if vr.trialEnded
     vr.trialEnded = 0;
     vr.tN = vr.tN+1;
     
+    vr.trial(vr.tN).start = now();
     vr.trial(vr.tN).N = vr.tN;    
     vr.trial(vr.tN).rewardN = 0;
-    vr.trial(vr.tN).startPosition =  [0 randi(12,112) eval(vr.exper.variables.mouseHeight) 0];
+    vr.trial(vr.tN).startPosition =  [0 randi([12,112]) eval(vr.exper.variables.mouseHeight) 0];
     
     %% update text boxes
-    mazeN = vr.trial(vr.tN).type;
+    cond = vr.trial(vr.tN).type;
     
     %% set the new maze
+    vr.position = vr.trial(vr.tN).startPosition;
 
-    vr.worlds{mazeN}.surface.visible(:) = 0;
-    vr.trial(vr.tN).blackoutTic = tic;
-    vr.isBlackout = 1;
+    vr.currentWorld = vr.trial(vr.tN).type;
+    vr.worlds{cond}.surface.visible(:) = 1;
     
 end
 
