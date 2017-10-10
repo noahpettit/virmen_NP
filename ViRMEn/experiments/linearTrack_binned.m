@@ -21,7 +21,7 @@ function vr = initializationCodeFun(vr)
 % set whether in debug mode:
 % vr.debugMode = 0;
 % % vr.imaging = 0;
-vr.drawText = 0;
+vr.drawText = 1;
 % vr.save = 0;
 daqreset;
 %
@@ -111,13 +111,17 @@ vr = initTextboxes(vr,16);
 
 %% define the reward and punishment locations (conditions) for each maze
 
-binEdges = 0:50:800;
+binEdges = 0:100:800;
 % reward conditions are matched to world number, so will be matched to
 % watever vr.currentWorld is. 
 
+baselineRProb = 0.2;
+
 n = 1;
-rProb = [0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 0.1 1];
+rProb = [0 0 0 0 0 0 0 1]';
 pProb = rProb*0; % no punishment in pre-training
+rProb(rProb==0 & pProb==0) = baselineRProb;
+
 vr.condition(n).binEdges = binEdges;
 vr.condition(n).rProb = rProb;
 vr.condition(n).pProb = pProb;
@@ -125,8 +129,10 @@ vr.condition(n).requiresLick = true;
 
 % first real maze - maze 2
 n = 2;
-rProb = [0.1 0.1 0.1 0 0.1 0.1 0.1 0.1 0.1 0.1 1 0.1 0.1 0.1 0.1 0.1];
-pProb = [0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0];
+rProb = [0 0 0 0 0 1 0 0]';
+pProb = [0 0 1 0 0 0 0 0]';
+rProb(rProb==0 & pProb==0) = baselineRProb;
+
 vr.condition(n).binEdges = binEdges;
 vr.condition(n).rProb = rProb;
 vr.condition(n).pProb = pProb;
@@ -134,8 +140,10 @@ vr.condition(n).requiresLick = true;
 
 % second real maze = maze 3
 n = 3;
-rProb = [0.1 0.1 0.1 0.1 1 0.1 0.1 0.1 0.1 0 0.1 0.1 0.1 0.1 0.1 0.1];
-pProb = [0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0];
+rProb = [0 1 0 0 0 0 0 0]';
+pProb = [0 0 0 0 0 1 0 0]';
+rProb(rProb==0 & pProb==0) = baselineRProb;
+
 vr.condition(n).binEdges = binEdges;
 vr.condition(n).rProb = rProb;
 vr.condition(n).pProb = pProb;
@@ -143,8 +151,9 @@ vr.condition(n).requiresLick = true;
 
 % third real maze = maze 4
 n = 4;
-rProb = [0.1 0.1 0.1 0.1 0.1 0.1 0.1 1 0.1 0.1 0.1 0.1 0.1 0.1 0 0.1];
-pProb = [0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0];
+rProb = [0 1 0 0 0 0 0 0]';
+pProb = [0 0 0 0 0 1 0 0]';
+rProb(rProb==0 & pProb==0) = baselineRProb;
 vr.condition(n).binEdges = binEdges;
 vr.condition(n).rProb = rProb;
 vr.condition(n).pProb = pProb;
@@ -175,12 +184,13 @@ vr.lastLickCount = 0;
 vr.ci.resetCounters;
 vr.analogSyncPulse = 1;
 vr.digitalSyncPulse = 0;
+vr = outputSyncPulse(vr);
 
 % --- RUNTIME code: executes on every iteration of the ViRMEn engine.
 function vr = runtimeCodeFun(vr)
 % first output synch pulse 
 
-% vr = outputSyncPulse(vr);
+%
 
 % increment iteration counter
 global mvData;
@@ -199,7 +209,7 @@ cond = vr.trial(vr.tN).type;
 binN = find(vr.condition(cond).binEdges<vr.position(2),1,'last');
 
 switch vr.keyPressed 
-    case 76
+    case 76 % L key
         vr.isLick = 1;
     case 82
         % R key to deliver reward manually
@@ -270,7 +280,7 @@ elseif vr.isLick
         end
         if rand<=vr.condition(cond).pProb(binN)
             % give punishment (air puff)
-            vr = giveAirPuff(vr,1);
+            vr = giveAirpuff(vr,1);
             vr.punishment = vr.punishment + 1;
         end
     end
@@ -304,6 +314,7 @@ if vr.trialEnded
     %% NEW TRIAL STARTS HERE     
     vr.trialEnded = 0;
     vr.tN = vr.tN+1;
+    vr = outputSyncPulse(vr);
     
     vr.trial(vr.tN).start = now();
     vr.trial(vr.tN).N = vr.tN;    
@@ -317,7 +328,9 @@ if vr.trialEnded
     vr.position = vr.trial(vr.tN).startPosition;
     vr.currentWorld = vr.trial(vr.tN).type;
     vr.worlds{cond}.surface.visible(:) = 1;
+    vr.drawText = 1;
     
+
 end
 
 % % draw the text
@@ -327,10 +340,32 @@ if vr.drawText
     vr.text(3).string = upper(['REWARDS: ' num2str(sum([vr.trial(:).totalReward]))]);
     vr.text(4).string = upper(['CC: ' num2str(vr.trial(vr.tN).type)]);
     vr.text(5).string = upper(['NC: ' num2str(vr.trial(vr.tN+1).type)]);
+    
+if vr.isLick
+    vr.text(6).string = upper(['LICK! ']);
+else
+    vr.text(6).string = upper(['']);
+end
 
-    vr.text(6).string = upper(['LICK: ', num2str(vr.isLick)]);
-    vr.text(7).string = upper(['LIB: ', num2str(vr.trial(vr.tN).licksInBin)]);
-    vr.text(8).string = upper(['BIN: ', num2str(binN)]);
+    %% compute the stats to show
+    ind = [vr.trial(:).type]==vr.trial(vr.tN).type;
+    ind(vr.tN+1:end) = 0;
+%     nBins = numel(vr.trial(vr.tN).licksInBin);
+    avgLick = mean([vr.trial(ind).licksInBin]>0,2);
+    avgReward = mean([vr.trial(ind).rewardInBin]>0,2);
+    avgPunishment = mean([vr.trial(ind).punishmentInBin]>0,2);
+
+
+    vr.text(7).string = upper(['BIN: ', num2str(binN)]);
+    vr.text(8).string = upper(['L: ', num2str(vr.trial(vr.tN).licksInBin')]);
+    
+    
+vr.text(9).string = upper(['AL: ', num2str(round(avgLick',1))]);
+vr.text(10).string = upper(['AR: ', num2str(round(avgReward',1))]);
+vr.text(11).string = upper(['AP: ', num2str(round(avgPunishment',1))]);
+
+
+vr.text(11).string = upper(['TTYPE: ', num2str(vr.trial(vr.tN).type)]);
 %     vr.text(10).string = upper(['FRZN: ', num2str(abs(vr.trial(vr.tN).frozenDuration))]);
 %     vr.text(12).string = upper(['BO: ', num2str(abs(vr.trial(vr.tN).blackoutDuration))]);
 %     vr.text(13).string = upper(['MAXBO: ', num2str(abs(vr.trial(vr.tN).itiMaxBlackout))]);
@@ -338,6 +373,7 @@ if vr.drawText
 %     vr.text(15).string = upper(['LRTG: ' num2str(rad2deg(vr.trial(vr.tN-1).rewardTowerDeg))]);
 %     vr.text(16).string = upper(['LEVELUP: ' num2str(vr.session.criterionReached)]);
 end
+vr.drawText = 1;
 % % save the iteration
 vr = saveIter(vr);
 

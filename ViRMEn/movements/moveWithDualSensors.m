@@ -17,8 +17,8 @@ offset = vr.ops.ballSensorOffset;
 
 data = data - offset;
 
-forwardGain = -100;
-viewAngleGain = -1;
+forwardGain = vr.ops.forwardGain;
+viewAngleGain = vr.ops.viewAngleGain;
 
 % Update velocity
 alpha = forwardGain; % = -115; %-44 % gain
