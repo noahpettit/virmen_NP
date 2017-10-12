@@ -1,5 +1,7 @@
 %%
 daqreset;
 vr = initDAQ([]);
-giveReward(vr,20);
-giveAirpuff(vr,1);
+%%
+giveReward(vr,4);
+%%
+giveAirpuff(vr,0.1);
