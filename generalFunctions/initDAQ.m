@@ -31,6 +31,11 @@ function vr = initDAQ(vr)
     % now add the counter input channels (lick data)
     vr.ci = daq.createSession('ni');
     vr.ci.addCounterInputChannel(ops.dev, ops.lickCh, 'EdgeCount');
+    vr.ci.Rate = (1e3);
+    vr.ci.NotifyWhenDataAvailableExceeds=50;
+    vr.ci.IsContinuous=1;
+    vr.ciListener = vr.ci.addlistener('DataAvailable', @updateLickCount);
+
     
     % now add digital output channels (reward)
     vr.do(1) = daq.createSession('ni');
@@ -56,7 +61,15 @@ function vr = initDAQ(vr)
     vr.ops = ops;
     startBackground(vr.ai);
     pause(1e-2);
+    startBackground(vr.ci);
+    pause(1e-2);
 end
+
+function updateLickCount(src,event)
+    global lickCount
+    lickCount = event.Data(end);
+end
+
 
 function avgMvData(src,event)
     global mvData

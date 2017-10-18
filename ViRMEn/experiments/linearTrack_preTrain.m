@@ -123,7 +123,8 @@ binEdges = 0:100:800;
 baselineRProb = 0.4;
 
 n = 1;
-rProb = [0 0 0 0 1 0 0 0]';
+rProb =         [0 0 0 0 1 0 0 0]';
+requiresLick =  [0 0 0 0 0 0 0 0]';
 pProb = rProb*0; % no punishment in pre-training
 rProb(rProb==0 & pProb==0) = baselineRProb;
 
@@ -133,7 +134,8 @@ vr.condition(n).pProb = pProb;
 vr.condition(n).requiresLick = true;
 
 n = 2;
-rProb = [0 0 0 0 1 0 0 0]';
+rProb =         [0 0 0 0 1 0 0 0]';
+requiresLick =  [0 0 0 0 0 0 0 0]';
 pProb = rProb*0; % no punishment in pre-training
 rProb(rProb==0 & pProb==0) = baselineRProb;
 
@@ -143,7 +145,8 @@ vr.condition(n).pProb = pProb;
 vr.condition(n).requiresLick = true;
 
 n = 3;
-rProb = [0 0 0 0 1 0 0 0]';
+rProb =         [0 0 0 0 1 0 0 0]';
+requiresLick =  [0 0 0 0 0 0 0 0]';
 pProb = rProb*0; % no punishment in pre-training
 rProb(rProb==0 & pProb==0) = baselineRProb;
 
@@ -151,39 +154,6 @@ vr.condition(n).binEdges = binEdges;
 vr.condition(n).rProb = rProb;
 vr.condition(n).pProb = pProb;
 vr.condition(n).requiresLick = true;
-
-
-% % first real maze - maze 2
-% n = 2;
-% rProb = [0 0 0 0 0 1 0 0]';
-% pProb = [0 0 1 0 0 0 0 0]';
-% rProb(rProb==0 & pProb==0) = baselineRProb;
-% 
-% vr.condition(n).binEdges = binEdges;
-% vr.condition(n).rProb = rProb;
-% vr.condition(n).pProb = pProb;
-% vr.condition(n).requiresLick = true;
-% 
-% % second real maze = maze 3
-% n = 3;
-% rProb = [0 1 0 0 0 0 0 0]';
-% pProb = [0 0 0 0 0 1 0 0]';
-% rProb(rProb==0 & pProb==0) = baselineRProb;
-% 
-% vr.condition(n).binEdges = binEdges;
-% vr.condition(n).rProb = rProb;
-% vr.condition(n).pProb = pProb;
-% vr.condition(n).requiresLick = true;
-% 
-% % third real maze = maze 4
-% n = 4;
-% rProb = [0 1 0 0 0 0 0 0]';
-% pProb = [0 0 0 0 0 1 0 0]';
-% rProb(rProb==0 & pProb==0) = baselineRProb;
-% vr.condition(n).binEdges = binEdges;
-% vr.condition(n).rProb = rProb;
-% vr.condition(n).pProb = pProb;
-% vr.condition(n).requiresLick = true;
 
 %%
 [vr.trial.licksInBin] = deal(vr.condition(1).rProb.*0);
@@ -201,8 +171,13 @@ vr.trial(vr.tN).start = now();
 vr.position = vr.trial(vr.tN).startPosition;
 
 %% Save copy of the virmen directory exactly as it is when this code is run
-archiveVirmenCode(vr);
+% archiveVirmenCode(vr);
+
+vr = commonInit(vr);
+
 vr = getGitHash(vr);
+vr = saveSession(vr);
+
 
 vr.iN = 0;
 
@@ -364,12 +339,8 @@ if vr.trialEnded
 %     else
 %         startY = min(vr.trial(vr.tN-1).startPosition(2)+scale,783);
 %     end
-    disp(vr.rpm);
-  
-    
-    
-    
-    
+%     disp(vr.rpm);
+
     vr.trial(vr.tN).startPosition =  [0 startY eval(vr.exper.variables.mouseHeight) pi/2];
     
     %% update text boxes
