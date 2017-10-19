@@ -43,4 +43,6 @@ if strcmp(vr.timers.airpuff.Running,'off');
 start(vr.timers.airpuff);
 end
 
+vr.punishment = vr.punishment+pulseDur;
+
 end

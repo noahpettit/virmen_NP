@@ -1,9 +1,9 @@
 function vr = initDAQ(vr)
 % Start the DAQ acquisition
-    if ~isfield(vr,'session');
+    if ~isfield(vr,'session')
         vr.session = [];
     end
-    if ~isfield(vr.session, 'rig');
+    if ~isfield(vr.session, 'rig')
         ops = getRigSettings; % attempt to find automatically
         vr.session.rig = ops.rigName;
     else
@@ -21,21 +21,16 @@ function vr = initDAQ(vr)
     ch.TerminalConfig = 'SingleEnded';
     ch = vr.ai.addAnalogInputChannel(ops.dev,ops.movementCh{3},'Voltage');
     ch.TerminalConfig = 'SingleEnded';
+    % add lick count channel
+    if ~isempty(ops.lickCh)
+    vr.ai.addCounterInputChannel(ops.dev, ops.lickCh, 'EdgeCount');
+    end
 
     % add notifier?
     vr.ai.Rate = (1e3);
     vr.ai.NotifyWhenDataAvailableExceeds=50;
     vr.ai.IsContinuous=1;
     vr.aiListener = vr.ai.addlistener('DataAvailable', @avgMvData);
-    
-    % now add the counter input channels (lick data)
-    vr.ci = daq.createSession('ni');
-    vr.ci.addCounterInputChannel(ops.dev, ops.lickCh, 'EdgeCount');
-    vr.ci.Rate = (1e3);
-    vr.ci.NotifyWhenDataAvailableExceeds=50;
-    vr.ci.IsContinuous=1;
-    vr.ciListener = vr.ci.addlistener('DataAvailable', @updateLickCount);
-
     
     % now add digital output channels (reward)
     vr.do(1) = daq.createSession('ni');
@@ -60,9 +55,7 @@ function vr = initDAQ(vr)
 %     end
     vr.ops = ops;
     startBackground(vr.ai);
-    pause(1e-2);
-    startBackground(vr.ci);
-    pause(1e-2);
+    pause(1e-1);
 end
 
 function updateLickCount(src,event)
@@ -73,5 +66,14 @@ end
 
 function avgMvData(src,event)
     global mvData
-    mvData = mean(event.Data,1);
+    global lickCount
+
+    mvData = mean(event.Data(:,1:3),1);
+    if size(event.Data,2)>3
+        lickCount = event.Data(end,4);
+    else
+        lickCount = 0;
+    end
+    
+
 end
