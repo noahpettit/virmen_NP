@@ -1,9 +1,12 @@
-function vr = commonRuntime(vr,phase)
+ function vr = commonRuntime(vr,phase)
 
 global lickCount
 global mvData
-cond = vr.trial(vr.tN).type;
-binN = find(vr.condition(cond).binEdges<vr.position(2),1,'last');
+vr.cond = vr.trial(vr.tN).type;
+vr.binN = find(vr.condition(vr.cond).binEdges<vr.position(2),1,'last');
+vr.binN(vr.binN>(length(vr.condition(vr.cond).binEdges)-1)) = length(vr.condition(vr.cond).binEdges)-1;
+vr.binN(vr.binN<1) = 1;
+    
 
 switch phase
     case 'iterStart'
@@ -37,31 +40,31 @@ switch phase
         end
         
         % first check to see if this spatial bin has been evaluated.
-        if ~ismember(binN,vr.binsEvaluated)
+        if ~ismember(vr.binN,vr.binsEvaluated)
             % we have not evaluated this bin yet
-            if vr.condition(cond).requiresLick(binN) && vr.isLick>0
+            if vr.condition(vr.cond).requiresLick(vr.binN) && vr.isLick>0
                 % then the mouse has licked
-                if rand<=vr.condition(cond).rProb(binN)
+                if rand<=vr.condition(vr.cond).rProb(vr.binN)
                     % give reward
                     vr = giveReward(vr,vr.session.rewardSize);
                 end
-                if rand<=vr.condition(cond).pProb(binN)
+                if rand<=vr.condition(vr.cond).pProb(vr.binN)
                     % give punishment (air puff)
                     vr = giveAirpuff(vr,vr.session.airPuffLength);
                 end
-                vr.binsEvaluated = [vr.binsEvaluated; binN];
+                vr.binsEvaluated = [vr.binsEvaluated; vr.binN];
             end
             
-            if ~vr.condition(cond).requiresLick(binN)
-                if rand<=vr.condition(cond).rProb(binN)
+            if ~vr.condition(vr.cond).requiresLick(vr.binN)
+                if rand<=vr.condition(vr.cond).rProb(vr.binN)
                     % give reward
                     vr = giveReward(vr,vr.session.rewardSize);
                 end
-                if rand<=vr.condition(cond).pProb(binN)
+                if rand<=vr.condition(vr.cond).pProb(vr.binN)
                     % give punishment (air puff)
                     vr = giveAirpuff(vr,vr.session.airPuffLength);
                 end
-                vr.binsEvaluated = [vr.binsEvaluated; binN];
+                vr.binsEvaluated = [vr.binsEvaluated; vr.binN];
             end
             
         end
@@ -69,14 +72,14 @@ switch phase
     case 'iterEnd'
         
         vr.trial(vr.tN).totalReward = vr.trial(vr.tN).totalReward+vr.reward;
-        vr.trial(vr.tN).licksInBin(binN) = vr.trial(vr.tN).licksInBin(binN)+vr.isLick;
-        vr.trial(vr.tN).rewardInBin(binN) = vr.trial(vr.tN).rewardInBin(binN)+vr.reward;
-        vr.trial(vr.tN).punishmentInBin(binN) = vr.trial(vr.tN).punishmentInBin(binN)+vr.punishment;
+        vr.trial(vr.tN).licksInBin(vr.binN) = vr.trial(vr.tN).licksInBin(vr.binN)+vr.isLick;
+        vr.trial(vr.tN).rewardInBin(vr.binN) = vr.trial(vr.tN).rewardInBin(vr.binN)+vr.reward;
+        vr.trial(vr.tN).punishmentInBin(vr.binN) = vr.trial(vr.tN).punishmentInBin(vr.binN)+vr.punishment;
         
         % % draw the text
         if vr.drawText
             % 1 is maze name
-            vr.text(1).string = upper([vr.session.sessionID]);
+%             vr.text(1).string = upper([vr.session.sessionID]);
             vr.text(2).string = upper(['TIME: ' datestr(now-vr.session.startTime,'HH.MM.SS')]);
             vr.text(3).string = upper(['TRIAL: ' num2str(vr.tN)]);
             vr.text(4).string = upper(['REWARDS: ' num2str(sum([vr.trial(1:vr.tN).totalReward]))]);
@@ -86,7 +89,7 @@ switch phase
             else
                 vr.text(5).string = upper(['']);
             end
-            vr.text(6).string = upper(['BIN: ', num2str(binN)]);
+            vr.text(6).string = upper(['BIN: ', num2str(vr.binN)]);
             vr.text(7).string = upper(['DIST: ', num2str(800-vr.position(2))]);
         end
         
@@ -120,10 +123,9 @@ switch phase
             vr.trial(vr.tN).rewardN = 0;
             
         if vr.drawText 
-            vr.text(8).string = upper('..........');
+            vr.text(8).string = upper('HELLO');
             vr.text(9).string = upper(['RPM: ', num2str(vr.rpm)]);
             vr.text(10).string = upper(['TTYPE: ', num2str(vr.trial(vr.tN).type)]);
-
         end
         
         
