@@ -29,7 +29,7 @@ ops = getRigSettings;
 vr.session = [];
 vr.session = struct(...
     ...% default entries
-    'sessionID', [vr.exper.variables.mouseID '_' datestr(now,'YYmmDD_hhMMss')], ...
+    'sessionID', [getMousePrefix(eval(vr.exper.variables.prefix)) sprintf('%03i', vr.exper.variables.mouseID) '_' datestr(now,'YYmmDD_hhMMss')], ...
     'rig',ops.rigName,...
     'startTime',now(),...
     'experimentCode', mfilename,... % change this to get the actual maze name from vr
@@ -141,9 +141,6 @@ vr = commonInit(vr);
 function vr = runtimeCodeFun(vr)
 
 vr = commonRuntime(vr,'iterStart');
-vr.isLick
-cond = vr.trial(vr.tN).type;
-binN = find(vr.condition(cond).binEdges<vr.position(2),1,'last');
 
 %% MAZE CONDITION CHECK
 
@@ -166,7 +163,7 @@ elseif (now-vr.trial(vr.tN).start)*24*60*60 > vr.session.trialMaxDuration
     vr.trial(vr.tN).blackoutDuration = 5;
 
 % check to see if the mouse is at the end of the maze
-elseif vr.position(2)>=800
+elseif vr.position(2)>=785
     vr.mazeEnded = 1;
     vr.trial(vr.tN).isTimeout = 0;
     vr.trial(vr.tN).blackoutDuration = 1;
@@ -178,7 +175,7 @@ end
 if vr.mazeEnded
     % start blackout
     vr.mazeEnded = 0;
-    vr.worlds{cond}.surface.visible(:) = 0;
+    vr.worlds{vr.cond}.surface.visible(:) = 0;
     vr.blackoutTic = tic;
     vr.isBlackout = 1;
     vr.isVisible = 0;
@@ -191,20 +188,30 @@ if vr.trialEnded
     
     %% update start position
     scale = vr.rpm-vr.session.targetRPM;
+    if isnan(scale) || isempty(scale)
+        scale = 0;
+    end
     startY = vr.trial(vr.tN-1).startPosition(2)-scale;
     startY(startY<2) = 2;
     startY(startY>798) = 798;
+    
+    vr.exper.variables.startY = num2str(startY);
+        
     vr.trial(vr.tN).startPosition =  [0 startY eval(vr.exper.variables.mouseHeight) pi/2];
     
     %% set the new maze
     vr.position = vr.trial(vr.tN).startPosition;
     vr.currentWorld = vr.trial(vr.tN).type;
-    vr.worlds{vr.currentWorld}.surface.visible(:) = 1;
-
+    
+    vr.worlds{vr.currentWorld} = loadVirmenWorld(vr.exper.worlds{vr.currentWorld});
+    
+    for k =1:length(vr.worlds)
+        vr.worlds{k}.surface.visible(:) = 1;
+        vr.worlds{k}.surface.colors(1,:)=0;
+    end
 end
-
-
 vr = commonRuntime(vr,'iterEnd');
+
 
 % --- TERMINATION code: executes after the ViRMEn engine stops.
 function vr = terminationCodeFun(vr)
