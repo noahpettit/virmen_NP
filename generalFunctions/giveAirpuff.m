@@ -17,6 +17,7 @@ if ischar(vr)
     
     vr.session.rig = rig;
     vr.reward = 0;
+    vr.punishment = 0;
 end
 
 % check to see if timer has been initialized
