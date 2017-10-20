@@ -117,6 +117,7 @@ switch phase
             %% NEW TRIAL STARTS HERE     
             vr.trialEnded = 0;
             vr.tN = vr.tN+1;
+            vr.binsEvaluated = [];
             vr = outputSyncPulse(vr);
 
             vr.trial(vr.tN).start = now();

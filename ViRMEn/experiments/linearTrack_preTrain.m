@@ -94,7 +94,7 @@ binEdges = 0:100:800;
 % reward conditions are matched to world number, so will be matched to
 % watever vr.currentWorld is. 
 
-baselineRProb = 0.4;
+baselineRProb = 0.2;
 
 n = 1;
 rProb =         [0 0 0 0 1 0 0 0]';

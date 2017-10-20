@@ -1,5 +1,7 @@
 function vr = initDAQ(vr)
 % Start the DAQ acquisition
+    global lickCount
+    lickCount = 0;
     if ~isfield(vr,'session')
         vr.session = [];
     end
@@ -23,7 +25,7 @@ function vr = initDAQ(vr)
     ch.TerminalConfig = 'SingleEnded';
     % add lick count channel
     if ~isempty(ops.lickCh)
-    vr.ai.addCounterInputChannel(ops.dev, ops.lickCh, 'EdgeCount');
+        vr.ai.addCounterInputChannel(ops.dev, ops.lickCh, 'EdgeCount');
     end
 
     % add notifier?
