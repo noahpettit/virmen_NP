@@ -79,7 +79,8 @@ switch phase
         % % draw the text
         if vr.drawText
             % 1 is maze name
-%             vr.text(1).string = upper([vr.session.sessionID]);
+            vr.text(1).string = upper(strrep([vr.session.sessionID],'_',' '));
+            
             vr.text(2).string = upper(['TIME: ' datestr(now-vr.session.startTime,'HH.MM.SS')]);
             vr.text(3).string = upper(['TRIAL: ' num2str(vr.tN)]);
             vr.text(4).string = upper(['REWARDS: ' num2str(sum([vr.trial(1:vr.tN).totalReward]))]);
@@ -90,7 +91,7 @@ switch phase
                 vr.text(5).string = upper(['']);
             end
             vr.text(6).string = upper(['BIN: ', num2str(vr.binN)]);
-            vr.text(7).string = upper(['DIST: ', num2str(800-vr.position(2))]);
+            vr.text(7).string = upper(['DIST: ', num2str(round(785-vr.position(2)))]);
         end
         
         % % save the iteration
