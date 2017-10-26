@@ -4,8 +4,8 @@ function vr = initPath(vr)
 
 ops = getRigSettings(vr.session.rig);
 
-vr.session.savePathFinal = [ops.dataDirectory vr.exper.variables.mouseID filesep vr.session.sessionID];
-vr.session.savePathTemp = [ops.dataDirectory vr.exper.variables.mouseID filesep vr.session.sessionID filesep 'temp'];
+vr.session.savePathFinal = [ops.dataDirectory vr.mouseID filesep vr.session.sessionID];
+vr.session.savePathTemp = [ops.dataDirectory vr.mouseID filesep vr.session.sessionID filesep 'temp'];
 
 % make directories if they do not already exist 
 if ~exist(vr.session.savePathFinal,'dir')
@@ -17,11 +17,11 @@ end
 
 % now check if binary file exists
 if ~isfield(vr, 'trialFileID');
-vr.trialFileID = fopen([vr.session.savePathTemp filesep vr.session.sessionID '_trialBinary.bin'],'a');
+vr.trialFileID = fopen([vr.session.savePathFinal filesep vr.session.sessionID '_trialBinary.bin'],'a');
 end
 
 % now check if binary file exists
 if ~isfield(vr, 'iterFileID');
-vr.iterFileID = fopen([vr.session.savePathTemp filesep vr.session.sessionID '_iterBinary.bin'],'a');
+vr.iterFileID = fopen([vr.session.savePathFinal filesep vr.session.sessionID '_iterBinary.bin'],'a');
 end
 

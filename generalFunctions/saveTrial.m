@@ -20,20 +20,24 @@ sz = cell2mat(vr.saveOnTrial(:,2));
 
 % now check if binary file exists
 if ~isfield(vr, 'trialFileID');
-vr.trialFileID = fopen([vr.session.savePathTemp filesep vr.session.sessionID '_trialBinary.bin'],'a');
+vr.trialFileID = fopen([vr.session.savePathFinal filesep vr.session.sessionID '_trialBinary.bin'],'a');
 end
 
 % check if the index file exsits
-if ~exist([vr.session.savePathTemp filesep vr.session.sessionID '_trialBinaryVariableNames.mat']);
+if ~exist([vr.session.savePathFinal filesep vr.session.sessionID '_trialBinaryVariableNames.mat']);
     saveOnTrial = vr.saveOnTrial;
-    save([vr.session.savePathTemp filesep vr.session.sessionID '_trialBinaryVariableNames.mat'],'saveOnTrial');
+    save([vr.session.savePathFinal filesep vr.session.sessionID '_trialBinaryVariableNames.mat'],'saveOnTrial');
 end
 
 ind = cumsum(sz);
-vec = zeros(sum(sz),1);
+vec = [];
 for k =1:size(vr.saveOnTrial,1)
     val = getfield(vr.trial(vr.tN),vr.saveOnTrial{k,1});
-    vec(ind(k):ind(k)+sz(k)-1) = val(:);
+    if numel(val)~=vr.saveOnTrial{k,2}
+        val
+        error(['Length of ' vr.saveOnTrial{k,1} 'is not' num2str(vr.saveOnTrial{k,2})]);
+    end
+    vec = [vec; val(:)];
 end
 
 fwrite(vr.trialFileID,vec,'double');

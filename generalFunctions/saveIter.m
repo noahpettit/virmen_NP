@@ -23,19 +23,23 @@ sz = cell2mat(vr.saveOnIter(:,2));
 
 % now check if binary file exists
 if ~isfield(vr, 'iterFileID');
-vr.iterFileID = fopen([vr.session.savePathTemp filesep vr.session.sessionID '_iterBinary.bin'],'a');
+vr.iterFileID = fopen([vr.session.savePathFinal filesep vr.session.sessionID '_iterBinary.bin'],'a');
 end
 
 % check if the index file exsits
-if ~exist([vr.session.savePathTemp filesep vr.session.sessionID '_iterBinaryVariableNames.mat']);
+if ~exist([vr.session.savePathFinal filesep vr.session.sessionID '_iterBinaryVariableNames.mat']);
     saveOnIter = vr.saveOnIter;
-    save([vr.session.savePathTemp filesep vr.session.sessionID '_iterBinaryVariableNames.mat'],'saveOnIter');
+    save([vr.session.savePathFinal filesep vr.session.sessionID '_iterBinaryVariableNames.mat'],'saveOnIter');
 end
 
 ind = cumsum(sz);
 vec = zeros(sum(sz),1);
 for k =1:size(vr.saveOnIter,1)
     val = getfield(vr,vr.saveOnIter{k,1});
+    if numel(val)~=vr.saveOnIter{k,2}
+        val
+        error(['Length of ' vr.saveOnIter{k,1} 'is not' num2str(vr.saveOnIter{k,2})]);
+    end
     vec = [vec; val(:)];
 end
 
