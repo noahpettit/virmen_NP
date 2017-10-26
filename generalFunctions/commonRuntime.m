@@ -109,6 +109,13 @@ switch phase
             lastNTrials = (vr.tN-1):-1:max((vr.tN-2),1);
             vr.rpm = sum([vr.trial(lastNTrials).totalReward])./(sum([vr.trial(lastNTrials).duration])/60);
             vr.rpm = vr.rpm/vr.session.rewardSize;
+            
+            % determine max distance
+            dist = [];
+            for k = vr.tN:-1:1
+            dist = [dist; 785-vr.trial(k).startPosition(2)];
+            end
+            
 
             %% SAVE TRIAL
     
@@ -125,9 +132,10 @@ switch phase
             vr.trial(vr.tN).rewardN = 0;
             
         if vr.drawText 
-            vr.text(8).string = upper('HELLO');
+            vr.text(8).string = upper(['MAXDIST: ' num2str(max(dist))]);
             vr.text(9).string = upper(['RPM: ', num2str(vr.rpm)]);
             vr.text(10).string = upper(['TTYPE: ', num2str(vr.trial(vr.tN).type)]);
+            vr.text(11).string = upper(['MEANDIST: ' num2str(mean(dist))]);
         end
         
         
