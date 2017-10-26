@@ -45,7 +45,7 @@ vr.rpm = 0;
 
 vr = getGitHash(vr);
 vr = saveSession(vr);
-vr = saveVr(vr);s
+vr = saveVr(vr);
 
 pause(0.1);
 

@@ -19,7 +19,7 @@ function vr = initializationCodeFun(vr)
 
 % set whether in debug mode:
 vr.debugMode = 0;
-vr.imaging = 0;
+vr.imaging = 1;
 vr.drawText = 1;
 daqreset;
 %
