@@ -35,7 +35,7 @@ vr.session = struct(...
     'startTime',now(),...
     'experimentCode', mfilename,... % change this to get the actual maze name from vr
     ... % custom fields
-    'trialMaxDuration', 45, ... % timeout countdown clock in seconds
+    'trialMaxDuration', 120, ... % timeout countdown clock in seconds
     'targetRPM',4, ...
     'rewardSize',2, ...
     'airPuffLength', 0.2 ...
@@ -73,7 +73,7 @@ vr.trial(1:5000,1) = struct(...
     'duration',0,...
     'totalReward',0,...
     'isCorrect',0,...
-    'type',1,... % in this maze the trial type and the world are the same? This generates some redundancy and confusion
+    'type',eval(vr.exper.variables.startingCondition),... % in this maze the trial type and the world are the same? This generates some redundancy and confusion
     'start',0,...
 ...%'world',vr.currentWorld,... % FOR NOW ASSUMING THAT WORLD IS "TYPE". I don't really see any major disadvantage to this at the moment (except that loading the world is time intensive)
     ...% general fields to all mazes:
@@ -186,12 +186,18 @@ if vr.trialEnded
     if isnan(scale) || isempty(scale)
         scale = 0;
     end
+    
+    if vr.trial(vr.tN).type==1
     startY = vr.trial(vr.tN-1).startPosition(2)-scale;
     startY(startY<5) = 5;
     startY(startY>785) = 785;
-    
-    vr.exper.variables.startY = num2str(startY);
+    else
+        startY = randi([5 25]);
+    end
         
+        
+    vr.exper.variables.startY = num2str(startY);
+
     vr.trial(vr.tN).startPosition =  [0 startY eval(vr.exper.variables.mouseHeight) pi/2];
     
     %% set the new maze

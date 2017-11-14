@@ -43,6 +43,15 @@ vr.digitalSyncPulse = 0;
 vr = outputSyncPulse(vr);
 vr.rpm = 0;
 
+vr.position = vr.trial(vr.tN).startPosition;
+vr.currentWorld = vr.trial(vr.tN).type;
+    
+vr.worlds{vr.currentWorld} = loadVirmenWorld(vr.exper.worlds{vr.currentWorld});
+    for k =1:length(vr.worlds)
+        vr.worlds{k}.surface.visible(:) = 1;
+        vr.worlds{k}.surface.colors(1,:)=0;
+    end
+
 vr = getGitHash(vr);
 vr = saveSession(vr);
 vr = saveVr(vr);
