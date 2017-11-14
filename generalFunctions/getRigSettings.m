@@ -84,7 +84,7 @@ switch rigName
         ops.digitalSyncCh = 'port0/line3';
         
         % base data directory settings
-        ops.dataDirectory = 'C:\DATA\LY\currentMice';
+        ops.dataDirectory = 'C:\DATA\NY Behavior\';
         
         % reward calibration info
         ops.pulseDur =      [0  0.01    0.05    0.1     0.2     ];
