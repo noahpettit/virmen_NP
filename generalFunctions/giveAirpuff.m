@@ -25,6 +25,10 @@ if ~isfield(vr, 'timers');
     vr.timers = [];
 end
 
+if ~isfield(vr,'punishment');
+    vr.punishment = 0;
+end
+
 % check to see if airpuff has been initialized
 if ~isfield(vr.timers, 'airpuff');
     t = timer;
