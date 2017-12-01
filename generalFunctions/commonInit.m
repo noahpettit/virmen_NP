@@ -35,6 +35,18 @@ vr.trial(vr.tN).N = vr.tN;
 vr.trial(vr.tN).start = now();
 vr.position = vr.trial(vr.tN).startPosition;
 
+%% set the new maze
+vr.position = vr.trial(vr.tN).startPosition;
+vr.currentWorld = vr.trial(vr.tN).type;
+
+vr.worlds{vr.currentWorld} = loadVirmenWorld(vr.exper.worlds{vr.currentWorld});
+
+for k =1:length(vr.worlds)
+    vr.worlds{k}.surface.visible(:) = 1;
+    vr.worlds{k}.surface.colors(1,:)=0;
+end
+
+
 vr.iN = 0;
 
 vr.lastLickCount = lickCount;

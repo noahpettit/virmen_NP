@@ -73,7 +73,7 @@ vr.trial(1:5000,1) = struct(...
     'duration',0,...
     'totalReward',0,...
     'isCorrect',0,...
-    'type',1,... % in this maze the trial type and the world are the same? This generates some redundancy and confusion
+    'type',eval(vr.exper.variables.startingCondition),... % in this maze the trial type and the world are the same? This generates some redundancy and confusion
     'start',0,...
 ...%'world',vr.currentWorld,... % FOR NOW ASSUMING THAT WORLD IS "TYPE". I don't really see any major disadvantage to this at the moment (except that loading the world is time intensive)
     ...% general fields to all mazes:
@@ -120,7 +120,7 @@ vr.condition(n).pProb = pProb;
 vr.condition(n).requiresLick = requiresLick;
 
 n = 3;
-rProb =         [0 0 0 0 1 0 0 0]';
+rProb =         [0 0 1 0 0 0 0 0]';
 requiresLick =  [0 0 0 0 0 0 0 0]';
 pProb = rProb*0; % no punishment in pre-training
 rProb(rProb==0 & pProb==0) = baselineRProb;
@@ -193,8 +193,8 @@ if vr.trialEnded
         scale = 0;
     end
     startY = vr.trial(vr.tN-1).startPosition(2)-scale;
-    startY(startY<2) = 2;
-    startY(startY>798) = 798;
+    startY(startY<15) = 15;
+    startY(startY>785) = 785;
     
     vr.exper.variables.startY = num2str(startY);
         
