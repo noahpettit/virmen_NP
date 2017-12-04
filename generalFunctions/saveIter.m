@@ -32,8 +32,7 @@ if ~exist([vr.session.savePathFinal filesep vr.session.sessionID '_iterBinaryVar
     save([vr.session.savePathFinal filesep vr.session.sessionID '_iterBinaryVariableNames.mat'],'saveOnIter');
 end
 
-ind = cumsum(sz);
-vec = zeros(sum(sz),1);
+vec = [];
 for k =1:size(vr.saveOnIter,1)
     val = getfield(vr,vr.saveOnIter{k,1});
     if numel(val)~=vr.saveOnIter{k,2}

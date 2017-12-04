@@ -29,7 +29,6 @@ if ~exist([vr.session.savePathFinal filesep vr.session.sessionID '_trialBinaryVa
     save([vr.session.savePathFinal filesep vr.session.sessionID '_trialBinaryVariableNames.mat'],'saveOnTrial');
 end
 
-ind = cumsum(sz);
 vec = [];
 for k =1:size(vr.saveOnTrial,1)
     val = getfield(vr.trial(vr.tN),vr.saveOnTrial{k,1});
