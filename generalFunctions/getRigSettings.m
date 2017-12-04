@@ -40,7 +40,7 @@ switch rigName
         
         % ball sensor offset
         ops.ballSensorOffset = [1.6654    1.6657    1.6710];
-        ops.forwardGain = -100;
+        ops.forwardGain = -285;
         ops.viewAngleGain = -0.35;
         
      case 'noah_desktop'
