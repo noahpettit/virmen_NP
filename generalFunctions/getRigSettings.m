@@ -34,8 +34,8 @@ switch rigName
         ops.dataDirectory = 'C:\DATA\Noah\NY Behavior\';
         
         % reward calibration info
-        ops.pulseDur =      [0  0.01    0.05    0.1     0.2     ];
-        ops.mL =            [0  0.0009  0.0056  0.0180  0.05    ];
+        ops.pulseDur =      [0  0.01 0.05    0.1     0.2     ];
+        ops.mL =            [0  0.0009  0.0056  0.0180  0.05    ]; % last calibrated: 2017-12-06
         ops.uL = ops.mL*1000;
         
         % ball sensor offset

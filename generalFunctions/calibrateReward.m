@@ -20,7 +20,7 @@ switch nargin
         rig = varargin{1};
         pulseDur = varargin{2};
         pulseDelay = varargin{3};
-        nPulse = varargin{3};
+        nPulse = varargin{4};
 end
 
 % reward delivery function
