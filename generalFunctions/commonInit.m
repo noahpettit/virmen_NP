@@ -18,6 +18,8 @@ vr.isFrozen = 0;
 vr.isBlackout = 0;
 vr.isPunishment = 0;
 vr.binsEvaluated = [];
+vr.manualReward = 0;
+vr.manualAirpuff = 0;
 
 % set up the path
 vr.ops = getRigSettings;

@@ -17,15 +17,20 @@ switch phase
         vr.reward = 0;
         vr.punishment = 0;
         vr.isVisible = ~vr.isBlackout;
+        vr.manualReward = 0;
+        vr.manualAirpuff = 0;
+        
         switch vr.keyPressed
             case 76 % L key
                 vr.isLick = 1;
             case 82
                 % R key to deliver reward manually
                 vr = giveReward(vr,vr.session.rewardSize);
+                vr.manualReward = 1;
             case 80
                 % P key to give air puff
                 vr = giveAirpuff(vr,vr.session.airPuffLength);
+                vr.manualAirpuff = 1;
             case 49
                 % "1" key pressed: switch world to world 1
                 [vr.trial(vr.tN+1:end).type] = deal(1);
@@ -106,7 +111,7 @@ switch phase
             vr.session.nRewards = num2str(sum([vr.trial(:).totalReward]));
             
             % determine rpm
-            lastNTrials = (vr.tN-1):-1:max((vr.tN-2),1);
+            lastNTrials = (vr.tN):-1:max((vr.tN-2),1);
             vr.rpm = sum([vr.trial(lastNTrials).totalReward])./(sum([vr.trial(lastNTrials).duration])/60);
             vr.rpm = vr.rpm/vr.session.rewardSize;
             

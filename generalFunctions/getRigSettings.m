@@ -60,9 +60,10 @@ switch rigName
         ops.dataDirectory = 'E:\Virmen\';
         
         % reward calibration info
-        ops.pulseDur =      [0  0.01    0.05    0.1     0.2     ];
-        ops.mL =            [0  0.0009  0.0056  0.0180  0.05    ];
-        ops.uL = ops.mL*1000;
+%         ops.pulseDur =      [0  0.01    0.05    0.1     0.2     ];
+%         ops.mL =            [0  0.0009  0.0056  0.0180  0.05    ];
+%         ops.uL = ops.mL*1000;
+
         
         % ball sensor offset
         ops.ballSensorOffset = [1.6654    1.6657    1.6710];
@@ -92,7 +93,7 @@ switch rigName
         ops.uL = ops.mL*1000;
         
         % ball sensor offset
-        ops.ballSensorOffset = [1.7015    1.7016    1.7021];
+        ops.ballSensorOffset = [1.6975    1.6975    1.6980];% calibrated 20180111
         ops.forwardGain = -185;
         ops.viewAngleGain = -0.35;
 

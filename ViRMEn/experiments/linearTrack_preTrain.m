@@ -36,7 +36,7 @@ vr.session = struct(...
     'experimentCode', mfilename,... % change this to get the actual maze name from vr
     ... % custom fields
     'trialMaxDuration', 45, ... % timeout countdown clock in seconds
-    'targetRPM',4, ...
+    'targetRPM',8, ...
     'rewardSize',2, ...
     'airPuffLength', 0.2 ...
     ); 
@@ -57,11 +57,13 @@ vr.saveOnIter = {...
     'isVisible',1;...
     'dt',1;...
     ... % custom fields
+    'manualReward',1;...
+    'manualAirpuff',1;...
     'punishment',1;...
     'isFrozen',1;... % whether the world is forzen
     'trialEnded',1;...
-    'mazeEnded',1;...
     'isBlackout',1;...
+    'mazeEnded',1;...
     'analogSyncPulse',1;...
     'digitalSyncPulse',1 ...
 };
@@ -101,7 +103,7 @@ n = 1;
 rProb =         [0 0 0 0 1 0 0 0]';
 requiresLick =  [0 0 0 0 0 0 0 0]';
 pProb = rProb*0; % no punishment in pre-training
-rProb(rProb==0 & pProb==0) = baselineRProb;
+% rProb(rProb==0 & pProb==0) = baselineRProb;
 
 vr.condition(n).binEdges = binEdges;
 vr.condition(n).rProb = rProb;
@@ -192,10 +194,17 @@ if vr.trialEnded
     if isnan(scale) || isempty(scale)
         scale = 0;
     end
-    startY = vr.trial(vr.tN-1).startPosition(2)-scale;
-    startY(startY<15) = 15;
-    startY(startY>785) = 785;
     
+    scale(scale>vr.session.targetRPM) = vr.session.targetRPM;
+    
+    if vr.trial(vr.tN).type==1
+        startY = vr.trial(vr.tN-1).startPosition(2)-scale;
+        startY(startY<15) = 15;
+        startY(startY>780) = 780;
+    else
+        startY = 15;
+    end
+        
     vr.exper.variables.startY = num2str(startY);
         
     vr.trial(vr.tN).startPosition =  [0 startY eval(vr.exper.variables.mouseHeight) pi/2];
@@ -203,7 +212,6 @@ if vr.trialEnded
     %% set the new maze
     vr.position = vr.trial(vr.tN).startPosition;
     vr.currentWorld = vr.trial(vr.tN).type;
-    
     vr.worlds{vr.currentWorld} = loadVirmenWorld(vr.exper.worlds{vr.currentWorld});
     
     for k =1:length(vr.worlds)
