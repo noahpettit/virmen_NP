@@ -77,9 +77,9 @@ switch phase
     case 'iterEnd'
         
         vr.trial(vr.tN).totalReward = vr.trial(vr.tN).totalReward+vr.reward;
-        vr.trial(vr.tN).licksInBin(vr.binN) = vr.trial(vr.tN).licksInBin(vr.binN)+vr.isLick;
-        vr.trial(vr.tN).rewardInBin(vr.binN) = vr.trial(vr.tN).rewardInBin(vr.binN)+vr.reward;
-        vr.trial(vr.tN).punishmentInBin(vr.binN) = vr.trial(vr.tN).punishmentInBin(vr.binN)+vr.punishment;
+%         vr.trial(vr.tN).licksInBin(vr.binN) = vr.trial(vr.tN).licksInBin(vr.binN)+vr.isLick;
+%         vr.trial(vr.tN).rewardInBin(vr.binN) = vr.trial(vr.tN).rewardInBin(vr.binN)+vr.reward;
+%         vr.trial(vr.tN).punishmentInBin(vr.binN) = vr.trial(vr.tN).punishmentInBin(vr.binN)+vr.punishment;
         
         % % draw the text
         if vr.drawText

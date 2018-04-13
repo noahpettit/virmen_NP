@@ -24,7 +24,6 @@ code.termination = @terminationCodeFun;
 function vr = initializationCodeFun(vr)
 
 % wrap world 
-
 for k = 1:length(vr.worlds)
 nvert = size(vr.worlds{k}.surface.vertices,2);
 xyzoffset = [0 400 0; 0 -400 0; 0 800 0]';
@@ -35,11 +34,7 @@ vr.worlds{k}.surface.vertices =  [vr.worlds{k}.surface.vertices orig.surface.ver
 vr.worlds{k}.surface.triangulation = [vr.worlds{k}.surface.triangulation orig.surface.triangulation+(nvert*j)];
 vr.worlds{k}.surface.visible = [vr.worlds{k}.surface.visible orig.surface.visible];
 vr.worlds{k}.surface.colors = [vr.worlds{k}.surface.colors orig.surface.colors];
-j
-disp(length(vr.worlds{k}.surface.vertices));
 end
-
-
 end
 
 % invert colors in world 2
