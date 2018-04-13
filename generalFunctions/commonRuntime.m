@@ -3,9 +3,9 @@
 global lickCount
 global mvData
 vr.cond = vr.trial(vr.tN).type;
-vr.binN = find(vr.condition(vr.cond).binEdges<vr.position(2),1,'last');
-vr.binN(vr.binN>(length(vr.condition(vr.cond).binEdges)-1)) = length(vr.condition(vr.cond).binEdges)-1;
-vr.binN(vr.binN<1) = 1;
+% vr.binN = find(vr.condition(vr.cond).binEdges<vr.position(2),1,'last');
+% vr.binN(vr.binN>(length(vr.condition(vr.cond).binEdges)-1)) = length(vr.condition(vr.cond).binEdges)-1;
+% vr.binN(vr.binN<1) = 1;
     
 
 switch phase
@@ -44,35 +44,35 @@ switch phase
                 [vr.trial(vr.tN+1:end).type] = deal(4);
         end
         
-        % first check to see if this spatial bin has been evaluated.
-        if ~ismember(vr.binN,vr.binsEvaluated)
-            % we have not evaluated this bin yet
-            if vr.condition(vr.cond).requiresLick(vr.binN) && vr.isLick>0
-                % then the mouse has licked
-                if rand<=vr.condition(vr.cond).rProb(vr.binN)
-                    % give reward
-                    vr = giveReward(vr,vr.session.rewardSize);
-                end
-                if rand<=vr.condition(vr.cond).pProb(vr.binN)
-                    % give punishment (air puff)
-                    vr = giveAirpuff(vr,vr.session.airPuffLength);
-                end
-                vr.binsEvaluated = [vr.binsEvaluated; vr.binN];
-            end
-            
-            if ~vr.condition(vr.cond).requiresLick(vr.binN)
-                if rand<=vr.condition(vr.cond).rProb(vr.binN)
-                    % give reward
-                    vr = giveReward(vr,vr.session.rewardSize);
-                end
-                if rand<=vr.condition(vr.cond).pProb(vr.binN)
-                    % give punishment (air puff)
-                    vr = giveAirpuff(vr,vr.session.airPuffLength);
-                end
-                vr.binsEvaluated = [vr.binsEvaluated; vr.binN];
-            end
-            
-        end
+%         % first check to see if this spatial bin has been evaluated.
+%         if ~ismember(vr.binN,vr.binsEvaluated)
+%             % we have not evaluated this bin yet
+%             if vr.condition(vr.cond).requiresLick(vr.binN) && vr.isLick>0
+%                 % then the mouse has licked
+%                 if rand<=vr.condition(vr.cond).rProb(vr.binN)
+%                     % give reward
+%                     vr = giveReward(vr,vr.session.rewardSize);
+%                 end
+%                 if rand<=vr.condition(vr.cond).pProb(vr.binN)
+%                     % give punishment (air puff)
+%                     vr = giveAirpuff(vr,vr.session.airPuffLength);
+%                 end
+%                 vr.binsEvaluated = [vr.binsEvaluated; vr.binN];
+%             end
+%             
+%             if ~vr.condition(vr.cond).requiresLick(vr.binN)
+%                 if rand<=vr.condition(vr.cond).rProb(vr.binN)
+%                     % give reward
+%                     vr = giveReward(vr,vr.session.rewardSize);
+%                 end
+%                 if rand<=vr.condition(vr.cond).pProb(vr.binN)
+%                     % give punishment (air puff)
+%                     vr = giveAirpuff(vr,vr.session.airPuffLength);
+%                 end
+%                 vr.binsEvaluated = [vr.binsEvaluated; vr.binN];
+%             end
+%             
+%         end
         
     case 'iterEnd'
         

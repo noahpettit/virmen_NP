@@ -129,6 +129,9 @@ vr.rewardLocationsRemaining = [];
 vr.localRewardsRemaining = [];
 vr.currentRewardLocation = [];
 
+%
+vr.binN = 1;
+vr.binsEvaluated = 1;
 
 %% common init
 vr = commonInit(vr);
