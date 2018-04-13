@@ -96,7 +96,7 @@ switch phase
                 vr.text(5).string = upper(['']);
             end
             vr.text(6).string = upper(['BIN: ', num2str(vr.binN)]);
-            vr.text(7).string = upper(['DIST: ', num2str(round(785-vr.position(2)))]);
+            vr.text(7).string = upper(['Y: ', num2str(round(vr.position(2)))]);
         end
         
         % % save the iteration
