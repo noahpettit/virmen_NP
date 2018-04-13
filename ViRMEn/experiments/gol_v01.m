@@ -38,7 +38,8 @@ vr.session = struct(...
     'trialMaxDuration', 45, ... % timeout countdown clock in seconds
     'targetRPM',8, ...
     'rewardSize',2, ...
-    'airPuffLength', 0.2 ...
+    'airPuffLength', 0.2, ...
+    'rewardZoneRadius', 10 ...
     ); 
 
 % names of variables (fields in vr) that will be saved on each iteration,
@@ -132,6 +133,7 @@ vr.currentRewardLocation = [];
 %
 vr.binN = 1;
 vr.binsEvaluated = 1;
+vr.position = [0 0 eval(vr.exper.variables.mouseHeight) pi/2];
 
 %% common init
 vr = commonInit(vr);
@@ -160,8 +162,8 @@ if vr.isLick
         [~,i] = min(abs(vr.rewardLocationsRemaining-vr.position(2)));
         vr.currentRewardLocation = vr.rewardLocationsRemaining(i);
         vr.rewardLocationsRemaining(i) = [];
-        ind=find(vr.condition(r.trial(vr.tN).type).rewardLocations==vr.currentRewardLocation);
-        vr.localRewardsRemaining = vr.condition(r.trial(vr.tN).type).rewardsPerLocation(ind);
+        ind=find(vr.condition(vr.trial(vr.tN).type).rewardLocations==vr.currentRewardLocation);
+        vr.localRewardsRemaining = vr.condition(vr.trial(vr.tN).type).rewardsPerLocation(ind);
         
         vr = giveReward(vr,vr.session.rewardSize);
         vr.localRewardsRemaining = vr.localRewardsRemaining - 1;
@@ -180,6 +182,21 @@ if vr.trialEnded
 end
 
 vr = commonRuntime(vr,'iterEnd');
+
+% wrap world 
+for k = 1:length(vr.worlds)
+nvert = size(vr.worlds{k}.surface.vertices,2);
+xyzoffset = [0 400 0; 0 -400 0; 0 800 0]';
+orig = vr.worlds{k};
+for j = 1:size(xyzoffset,2)
+offsetmat = repmat(xyzoffset(:,j),1,nvert);
+vr.worlds{k}.surface.vertices =  [vr.worlds{k}.surface.vertices orig.surface.vertices+offsetmat];
+vr.worlds{k}.surface.triangulation = [vr.worlds{k}.surface.triangulation orig.surface.triangulation+(nvert*j)];
+vr.worlds{k}.surface.visible = [vr.worlds{k}.surface.visible orig.surface.visible];
+vr.worlds{k}.surface.colors = [vr.worlds{k}.surface.colors orig.surface.colors];
+end
+end
+
 
 
 % --- TERMINATION code: executes after the ViRMEn engine stops.
