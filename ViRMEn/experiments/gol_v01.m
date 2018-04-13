@@ -37,7 +37,7 @@ vr.session = struct(...
     ... % custom fields
     'trialMaxDuration', 45, ... % timeout countdown clock in seconds
     'targetRPM',8, ...
-    'rewardSize',2, ...
+    'rewardSize',4, ...
     'airPuffLength', 0.2, ...
     'rewardZoneRadius', 10 ...
     ); 
@@ -90,7 +90,7 @@ vr.trial(1:5000,1) = struct(...
 vr.session.trialTypeNames = {'lineara','linearb','world1a','world1b','world2a','world2b'};
 
 n = 1;
-vr.condition(n).rewardLocations = [5 65 125 140 188 212 318 451];
+vr.condition(n).rewardLocations = [5 65 125 140 188 212 318 35];
 vr.condition(n).rewardsPerLocation = [4 4 4 4 4 4 4 4];
 vr.condition(n).rewardProb = [1 1 1 1 1 1 1 1]; 
 vr.condition(n).world = 1;
@@ -138,6 +138,20 @@ vr.position = [0 0 eval(vr.exper.variables.mouseHeight) pi/2];
 %% common init
 vr = commonInit(vr);
 
+% wrap world 
+for k = 1:length(vr.worlds)
+nvert = size(vr.worlds{k}.surface.vertices,2);
+xyzoffset = [0 400 0; 0 -400 0; 0 800 0]';
+orig = vr.worlds{k};
+for j = 1:size(xyzoffset,2)
+offsetmat = repmat(xyzoffset(:,j),1,nvert);
+vr.worlds{k}.surface.vertices =  [vr.worlds{k}.surface.vertices orig.surface.vertices+offsetmat];
+vr.worlds{k}.surface.triangulation = [vr.worlds{k}.surface.triangulation orig.surface.triangulation+(nvert*j)];
+vr.worlds{k}.surface.visible = [vr.worlds{k}.surface.visible orig.surface.visible];
+vr.worlds{k}.surface.colors = [vr.worlds{k}.surface.colors orig.surface.colors];
+end
+end
+
 % --- RUNTIME code: executes on every iteration of the ViRMEn engine.
 function vr = runtimeCodeFun(vr)
 
@@ -183,19 +197,7 @@ end
 
 vr = commonRuntime(vr,'iterEnd');
 
-% wrap world 
-for k = 1:length(vr.worlds)
-nvert = size(vr.worlds{k}.surface.vertices,2);
-xyzoffset = [0 400 0; 0 -400 0; 0 800 0]';
-orig = vr.worlds{k};
-for j = 1:size(xyzoffset,2)
-offsetmat = repmat(xyzoffset(:,j),1,nvert);
-vr.worlds{k}.surface.vertices =  [vr.worlds{k}.surface.vertices orig.surface.vertices+offsetmat];
-vr.worlds{k}.surface.triangulation = [vr.worlds{k}.surface.triangulation orig.surface.triangulation+(nvert*j)];
-vr.worlds{k}.surface.visible = [vr.worlds{k}.surface.visible orig.surface.visible];
-vr.worlds{k}.surface.colors = [vr.worlds{k}.surface.colors orig.surface.colors];
-end
-end
+
 
 
 
