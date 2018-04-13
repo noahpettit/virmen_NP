@@ -76,13 +76,13 @@ switch rigName
         % daq settings
         ops.dev = 'dev2';
         ops.movementCh = {'ai0','ai1','ai2'}; % list in order of : pitch, roll, yaw
-        ops.lickCh = 'ctr0'; % counter channel
+        ops.lickCh = ''; % counter channel
         ops.rewardCh = 'port0/line0'; % note reward is now with digital channel!
         ops.airPuffCh = 'port0/line2';
 %         ops.doClock = {'Dev2/PFI1','Dev2/PFI2'};
-        ops.outputSyncSignal = 1;
-        ops.analogSyncCh = 'port0/line4';
-        ops.digitalSyncCh = 'port0/line3';
+        ops.outputSyncSignal = 0;
+        ops.analogSyncCh = '';
+        ops.digitalSyncCh = '';
         
         % base data directory settings
         ops.dataDirectory = 'C:\DATA\NY Behavior\';
