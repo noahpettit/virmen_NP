@@ -20,6 +20,7 @@ switch rigName
     case 'loki'
         ops.rigName = rigName;
         % daq settings
+        ops.hardware_version = 1;
         ops.dev = 'dev1';
         ops.movementCh = {'ai0','ai1','ai2'}; % list in order of : pitch, roll, yaw
         ops.lickCh = 'ctr0'; % counter channel
@@ -47,6 +48,8 @@ switch rigName
         ops.rigName = rigName;
         % daq settings
         ops.dev = 'dev1';
+        ops.hardware_version = 1;
+
         ops.movementCh = {'ai0','ai1','ai2'}; % list in order of : pitch, roll, yaw
         ops.lickCh = 'ctr0'; % counter channel
         ops.rewardCh = 'port0/line2'; % note reward is now with digital channel!
@@ -74,11 +77,12 @@ switch rigName
         % the behavior rig in the back left of the old training room
         ops.rigName = rigName;
         % daq settings
+        ops.hardware_version = 2;
         ops.dev = 'dev2';
         ops.movementCh = {'ai0','ai1','ai2'}; % list in order of : pitch, roll, yaw
-        ops.lickCh = ''; % counter channel
-        ops.rewardCh = 'port0/line0'; % note reward is now with digital channel!
-        ops.airPuffCh = 'port0/line2';
+        ops.lickCh = 'ctr0'; % counter channel
+        ops.rewardCh = 'ao0'; % note reward is now with digital channel!
+        ops.airPuffCh = 'ao1';
 %         ops.doClock = {'Dev2/PFI1','Dev2/PFI2'};
         ops.outputSyncSignal = 0;
         ops.analogSyncCh = '';

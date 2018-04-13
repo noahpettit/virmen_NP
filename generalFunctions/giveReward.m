@@ -23,15 +23,15 @@ if ischar(vr) || isempty(vr)
 end
 ops = getRigSettings(vr.session.rig);
 % check to see if timer has been initialized
-if ~isfield(vr, 'timers');
+if ~isfield(vr, 'timers')
     vr.timers = [];
 end
 
 % check to see if airpuff has been initialized
-if ~isfield(vr.timers, 'reward');
+if ~isfield(vr.timers, 'reward')
     t = timer;
     t.UserData = vr.do(1);
-    t.StartFcn = @(src,event) outputSingleScan(src.UserData,1);
+    t.StartFcn = @(src,event) outputSingleScan(src.UserData,5);
     t.TimerFcn = @(src,event) outputSingleScan(src.UserData,0);
     t.ExecutionMode = 'singleShot';
     t.BusyMode = 'queue';
@@ -51,7 +51,7 @@ end
 
 % use timer to continue running virmen.
 vr.timers.reward.StartDelay = round(pulseDur.*1000)/1000;
-if strcmp(vr.timers.reward.Running,'off');
+if strcmp(vr.timers.reward.Running,'off')
 start(vr.timers.reward);
 end
 
