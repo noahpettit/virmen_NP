@@ -23,9 +23,51 @@ code.termination = @terminationCodeFun;
 % --- INITIALIZATION code: executes before the ViRMEn engine starts.
 function vr = initializationCodeFun(vr)
 
+% wrap world 
+
+for k = 1:length(vr.worlds)
+nvert = size(vr.worlds{k}.surface.vertices,2);
+xyzoffset = [0 400 0; 0 -400 0; 0 800 0]';
+orig = vr.worlds{k};
+for j = 1:size(xyzoffset,2)
+offsetmat = repmat(xyzoffset(:,j),1,nvert);
+vr.worlds{k}.surface.vertices =  [vr.worlds{k}.surface.vertices orig.surface.vertices+offsetmat];
+vr.worlds{k}.surface.triangulation = [vr.worlds{k}.surface.triangulation orig.surface.triangulation+(nvert*j)];
+vr.worlds{k}.surface.visible = [vr.worlds{k}.surface.visible orig.surface.visible];
+vr.worlds{k}.surface.colors = [vr.worlds{k}.surface.colors orig.surface.colors];
+j
+disp(length(vr.worlds{k}.surface.vertices));
+end
+
+
+end
+
+% invert colors in world 2
+
+vr.currentWorld = 3;
+% vr.worlds{3}.surface.colors(1:3,:) = abs(1-vr.worlds{3}.surface.colors(1:3,:));
+
+% for k = 1:length(vr.worlds)
+% vr.worlds{k}.surface.colors(1,:) = 0;
+% end
+
+
 
 %% --- RUNTIME code: executes on every iteration of the ViRMEn engine.
 function vr = runtimeCodeFun(vr)
+
+vr.position(2) = mod(vr.position(2),400);
+switch vr.keyPressed
+            case 49
+                % "1" key pressed: switch world to world 1
+                vr.currentWorld = 1;
+            case 50
+                vr.currentWorld = 2;
+            case 51
+                vr.currentWorld = 3;
+        end
+
+
 
 
 % --- TERMINATION code: executes after the ViRMEn engine stops.

@@ -186,7 +186,6 @@ end
 
 %% TRIAL END
 if vr.trialEnded
-
     vr = commonRuntime(vr,'trialEnd');
     
     %% update start position
