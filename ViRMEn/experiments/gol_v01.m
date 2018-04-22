@@ -39,7 +39,7 @@ vr.session = struct(...
     'targetRPM',8, ...
     'rewardSize',4, ...
     'airPuffLength', 0.2, ...
-    'rewardZoneRadius', 10 ...
+    'rewardZoneRadius', 20 ...
     ); 
 
 % names of variables (fields in vr) that will be saved on each iteration,
@@ -90,38 +90,38 @@ vr.trial(1:5000,1) = struct(...
 vr.session.trialTypeNames = {'lineara','linearb','world1a','world1b','world2a','world2b'};
 
 n = 1;
-vr.condition(n).rewardLocations = [5 65 125 140 188 212 318 35];
-vr.condition(n).rewardsPerLocation = [4 4 4 4 4 4 4 4];
-vr.condition(n).rewardProb = [1 1 1 1 1 1 1 1]; 
+vr.condition(n).rewardLocations = [20 65 125 188 212 318];
+vr.condition(n).rewardsPerLocation = [1 1 1 1 1 1];
+vr.condition(n).rewardProb = [1 1 1 1 1 1]; 
 vr.condition(n).world = 1;
 
 n = 2;
 vr.condition(n).rewardLocations = [5 188 451];
-vr.condition(n).rewardsPerLocation = [4 4 4];
+vr.condition(n).rewardsPerLocation = [2 2 2];
 vr.condition(n).rewardProb = [1 1 1]; 
 vr.condition(n).world = 1;
 
 n = 3;
 vr.condition(n).rewardLocations = [100];
-vr.condition(n).rewardsPerLocation = [4];
+vr.condition(n).rewardsPerLocation = [6];
 vr.condition(n).rewardProb = [1]; 
 vr.condition(n).world = 2;
 
 n = 4;
 vr.condition(n).rewardLocations = [300];
-vr.condition(n).rewardsPerLocation = [4];
+vr.condition(n).rewardsPerLocation = [6];
 vr.condition(n).rewardProb = [1]; 
 vr.condition(n).world = 2;
 
 n = 5;
 vr.condition(n).rewardLocations = [300];
-vr.condition(n).rewardsPerLocation = [4];
+vr.condition(n).rewardsPerLocation = [6];
 vr.condition(n).rewardProb = [1]; 
 vr.condition(n).world = 3;
 
 n = 6;
 vr.condition(n).rewardLocations = [100];
-vr.condition(n).rewardsPerLocation = [4];
+vr.condition(n).rewardsPerLocation = [6];
 vr.condition(n).rewardProb = [1]; 
 vr.condition(n).world = 3;
 
@@ -151,6 +151,8 @@ vr.worlds{k}.surface.visible = [vr.worlds{k}.surface.visible orig.surface.visibl
 vr.worlds{k}.surface.colors = [vr.worlds{k}.surface.colors orig.surface.colors];
 end
 end
+vr.currentWorld = vr.condition(vr.trial(vr.tN).type).world;
+
 
 % --- RUNTIME code: executes on every iteration of the ViRMEn engine.
 function vr = runtimeCodeFun(vr)
@@ -162,7 +164,7 @@ if vr.position(2)>400
     vr.position(2) = vr.position(2)-400;
 end
 
-if abs(vr.currentRewardLocation-vr.position(2))>10
+if abs(vr.currentRewardLocation-vr.position(2))>vr.session.rewardZoneRadius
     vr.localRewardsRemaining = 0;
 end
 
@@ -171,7 +173,7 @@ if vr.isLick
         vr = giveReward(vr,vr.session.rewardSize);
         vr.localRewardsRemaining = vr.localRewardsRemaining - 1;
         
-    elseif min(abs(vr.rewardLocationsRemaining-vr.position(2)))<=10
+    elseif min(abs(vr.rewardLocationsRemaining-vr.position(2)))<=vr.session.rewardZoneRadius
         % find reward location
         [~,i] = min(abs(vr.rewardLocationsRemaining-vr.position(2)));
         vr.currentRewardLocation = vr.rewardLocationsRemaining(i);

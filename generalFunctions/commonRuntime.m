@@ -42,6 +42,11 @@ switch phase
                 [vr.trial(vr.tN+1:end).type] = deal(3);
             case 52
                 [vr.trial(vr.tN+1:end).type] = deal(4);
+            case 53
+                [vr.trial(vr.tN+1:end).type] = deal(5);
+            case 54
+                [vr.trial(vr.tN+1:end).type] = deal(6);
+
         end
         
 %         % first check to see if this spatial bin has been evaluated.
@@ -88,7 +93,7 @@ switch phase
             
             vr.text(2).string = upper(['TIME: ' datestr(now-vr.session.startTime,'HH.MM.SS')]);
             vr.text(3).string = upper(['TRIAL: ' num2str(vr.tN)]);
-            vr.text(4).string = upper(['REWARDS: ' num2str(sum([vr.trial(1:vr.tN).totalReward]))]);
+            vr.text(4).string = upper(['RWRDS: ' num2str(sum([vr.trial(1:vr.tN).totalReward]))]);
             % 5 is lick
             if vr.isLick
                 vr.text(5).string = upper(['LICK! ']);
