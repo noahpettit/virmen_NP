@@ -88,7 +88,7 @@ switch phase
             else
                 vr.text(5).string = upper(['']);
             end
-            vr.text(6).string = upper(['BIN: ', num2str(vr.binN)]);
+            vr.text(6).string = upper(['PROBE: ', num2str(vr.trial(vr.tN).isProbe)]);
             vr.text(7).string = upper(['Y: ', num2str(round(vr.position(2)))]);
         end
         
