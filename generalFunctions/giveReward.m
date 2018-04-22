@@ -31,7 +31,7 @@ end
 if ~isfield(vr.timers, 'reward')
     t = timer;
     t.UserData = vr.do(1);
-    t.StartFcn = @(src,event) outputSingleScan(src.UserData,5);
+    t.StartFcn = @(src,event) outputSingleScan(src.UserData,1);
     t.TimerFcn = @(src,event) outputSingleScan(src.UserData,0);
     t.ExecutionMode = 'singleShot';
     t.BusyMode = 'queue';
