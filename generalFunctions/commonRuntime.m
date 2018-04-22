@@ -31,21 +31,9 @@ switch phase
                 % P key to give air puff
                 vr = giveAirpuff(vr,vr.session.airPuffLength);
                 vr.manualAirpuff = 1;
-            case 49
+            case {49 50 51 52 53 54 55}
                 % "1" key pressed: switch world to world 1
-                [vr.trial(vr.tN+1:end).type] = deal(1);
-            case 50
-                % "2" key pressed: switch world to world 2
-                [vr.trial(vr.tN+1:end).type] = deal(2);
-            case 51
-                % "3" key pressed: switch world to world 3
-                [vr.trial(vr.tN+1:end).type] = deal(3);
-            case 52
-                [vr.trial(vr.tN+1:end).type] = deal(4);
-            case 53
-                [vr.trial(vr.tN+1:end).type] = deal(5);
-            case 54
-                [vr.trial(vr.tN+1:end).type] = deal(6);
+                [vr.trial(vr.tN+1:end).type] = deal(vr.keyPressed-48);
 
         end
         
